@@ -8,10 +8,14 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
 
   async getUsers() {
     return await this.userModel.find();
+  }
+
+  async getUser(id: string) {
+    return await this.userModel.findById(id)
   }
 
   async createUser(user: CreateUserDto) {
@@ -25,7 +29,7 @@ export class UsersService {
       }
 
       const userFound = await this.userModel.findOne({ email });
-      if(userFound) {
+      if (userFound) {
         return {
           message: 'Email already exist',
           status: 400,
@@ -47,4 +51,9 @@ export class UsersService {
       throw new Error('Error al crear usuario');
     }
   }
+
+  async findOne(username: string) {
+    return await this.userModel.findOne({ username })
+  }
+
 }

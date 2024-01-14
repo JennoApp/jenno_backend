@@ -3,10 +3,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://127.0.0.1/youshop-database'), UsersModule],
+  imports: [
+    MongooseModule.forRoot('mongodb://127.0.0.1/youshop-database'),
+    AuthModule,
+    UsersModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
