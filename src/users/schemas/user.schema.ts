@@ -28,9 +28,13 @@ export const UserSchema = new Schema({
     type: String,
     required: false
   },
-  goods: [{
+  products: [{
     type: Schema.Types.ObjectId,
-    ref: 'Goods'
+    ref: 'Products'
+  }],
+  services: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Services'
   }],
   followers: [{
     type: Schema.Types.ObjectId,
@@ -42,7 +46,7 @@ export const UserSchema = new Schema({
   }],
   cart: [{
     type: Schema.Types.ObjectId,
-    ref: 'Goods'
+    ref: 'Cart'
   }],
   accountType: {
     type: String,

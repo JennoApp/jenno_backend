@@ -52,8 +52,8 @@ export class UsersService {
     }
   }
 
-  async findOne(username: string) {
-    return await this.userModel.findOne({ username })
+  async findOne(email: string): Promise<any | null> {
+    return await this.userModel.findOne({ email })
   }
 
 }
