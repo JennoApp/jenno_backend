@@ -1,7 +1,5 @@
-import { Controller, Request, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@nestjs/passport'
-import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -10,6 +8,11 @@ export class UsersController {
   @Get()
   getUsers() {
     return this.usersService.getUsers();
+  }
+
+  @Get(':id')
+  getUser(@Param('id') id) {
+    return this.usersService.getUser(id)
   }
 
   @Post()
