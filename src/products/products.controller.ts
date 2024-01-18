@@ -21,6 +21,11 @@ export class ProductsController {
     return this.productsService.getProduct(id)
   }
 
+  @Get('/user/:userId')
+  getProductsbyUser(@Param('userId') userId) {
+    return this.productsService.getProductsbyUser(userId)
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   async createProduct(@Request() req, @Body() product: ProductDto) {
