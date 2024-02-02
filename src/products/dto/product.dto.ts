@@ -10,10 +10,14 @@ export class ProductDto {
   requirements?: string;
   policies?: string;
   description?: string;
-  category?: [string];
+  category?: string;
   attributes?: [string];
   weight?: number;
-  dimensions?: string;
+  dimensions?: {
+    length?: number,
+    width?: number,
+    height?: number
+  };
   status?: [string];
   visibility?: boolean;
   Tags?: [string];

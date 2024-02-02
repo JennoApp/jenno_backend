@@ -1,5 +1,17 @@
 import { Schema } from 'mongoose'
 
+interface Dimensions {
+  length: Number,
+  width: Number,
+  height: Number
+}
+
+const dimensionsSchema = new Schema<Dimensions>({
+  length: Number,
+  width: Number,
+  height: Number
+})
+
 export const ProductSchema = new Schema({
   productname: String,
   imgs: [String],
@@ -27,7 +39,9 @@ export const ProductSchema = new Schema({
     }
   },
   weight: Number,
-  dimensions: String,
+  dimensions: {
+    type: dimensionsSchema
+  },
   status: {
     type: String,
     enum: ['in_stock', 'sold_out', 'on_sale', 'active', 'paused', 'inactive'],

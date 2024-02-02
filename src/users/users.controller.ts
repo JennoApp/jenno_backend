@@ -15,6 +15,11 @@ export class UsersController {
     return this.usersService.getUser(id)
   }
 
+  @Get('/findOne/:username')
+  getUserByUsername(@Param('username') username: string) {
+    return this.usersService.findOne(username)
+  }
+
   @Post()
   createUser(@Body() user: any) {
     return this.usersService.createUser(user)

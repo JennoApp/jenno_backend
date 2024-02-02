@@ -31,9 +31,20 @@ export class ProductsController {
   async createProduct(@Request() req, @Body() product: ProductDto) {
     const newProduct = {
       productname: product.productname,
+      imgs: product.imgs,
       price: product.price,
       quantity: product.quantity,
-      user: req.user.userId
+      SKU: product.SKU,
+      category: product.category,
+      weight: product.weight,
+      /// dimensions
+      length: product.dimensions?.length,
+      width: product.dimensions?.width,
+      height: product.dimensions?.height,
+      /// 
+      status: product.status,
+      user: req.user.userId,
+      username: req.user.username
     }
 
     const saveProduct = await this.productsService.createProduct(newProduct)

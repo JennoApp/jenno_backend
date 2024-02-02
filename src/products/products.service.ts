@@ -24,7 +24,6 @@ export class ProductsService {
   async getProductsbyUser(userId: string) {
     return await this.productModel
       .find({ user: userId })
-      .select('productname price quantity')
   }
 
   // crate a new product
