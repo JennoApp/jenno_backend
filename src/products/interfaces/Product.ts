@@ -22,5 +22,6 @@ export interface Product extends Document {
   reviews: [String],
   discounts: [String],
   user: ObjectId,
-  username: String
+  username: String,
+  userProfileImg: String
 }

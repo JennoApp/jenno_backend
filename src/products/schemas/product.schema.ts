@@ -69,6 +69,7 @@ export const ProductSchema = new Schema({
     ref: 'User'
   },
   username: String,
+  userProfileImg: String,
   /*
   createAt: {
     type: Date,

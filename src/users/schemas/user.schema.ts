@@ -36,14 +36,8 @@ export const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Services'
   }],
-  followers: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  }],
-  following: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  }],
+  followers: [String],
+  following: [String],
   cart: [{
     type: Schema.Types.ObjectId,
     ref: 'Cart'

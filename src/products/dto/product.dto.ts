@@ -26,4 +26,5 @@ export class ProductDto {
   discounts?: [string];
   user?: string;
   username?: string;
+  userProfileImg?: string;
 }

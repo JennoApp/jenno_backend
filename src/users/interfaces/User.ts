@@ -6,4 +6,6 @@ export interface User extends Document {
   profileImg: string,
   password: string,
   accountType: string,
+  following: string[],
+  followers: string[]
 }
