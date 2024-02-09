@@ -63,9 +63,15 @@ export class UsersService {
     }
   }
 
+  // busca un usuario con el tipo de cuanta business
   async findOne(username: string): Promise<any | null> {
-    return await this.userModel.findOne({ username })
+  return await this.userModel.findOne({ username, accountType: "business"})
   }
+
+  // busca un usuario con el tipo de cuenta personal
+  async findOnePersonal(userId: string): Promise<any | null> {
+    return await this.userModel.findOne({ _id: userId, accountType: "personal" })
+  } 
 
   async findOneByEmail(email: string): Promise<any | null> {
     return await this.userModel.findOne({ email })
