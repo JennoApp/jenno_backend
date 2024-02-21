@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Request, Body, UseGuards, Param } from '@nestjs/common'
+import { Controller, Get, Post, Request, Body, UseGuards, Param, Query } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -12,8 +12,8 @@ export class ProductsController {
   ) { }
 
   @Get()
-  getProducts() {
-    return this.productsService.getProducts()
+  getProducts(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.productsService.getProducts(page, limit)
   }
 
   @Get(':id')
@@ -22,8 +22,8 @@ export class ProductsController {
   }
 
   @Get('/user/:userId')
-  getProductsbyUser(@Param('userId') userId) {
-    return this.productsService.getProductsbyUser(userId)
+  getProductsbyUser(@Param('userId') userId, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.productsService.getProductsbyUser(userId, page, limit)
   }
 
   @UseGuards(JwtAuthGuard)

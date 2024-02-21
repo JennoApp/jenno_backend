@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose'
 import { Product } from './interfaces/Product'
 import { ProductDto } from './dto/product.dto';
+import { PaginatedDto } from './dto/paginated.dto';
 
 @Injectable()
 export class ProductsService {
@@ -11,8 +12,11 @@ export class ProductsService {
   ) { }
 
   // return all products in database
-  async getProducts() {
-    return await this.productModel.find()
+  async getProducts(page: number, limit: number) {
+    const products = await this.productModel.find().limit(limit).skip((page - 1) * limit).exec()
+    const itemsCount = await this.productModel.countDocuments()
+
+    return new PaginatedDto(products, page, limit, itemsCount)
   }
 
   // found product by id
@@ -21,9 +25,12 @@ export class ProductsService {
   }
 
   // return all products for single users
-  async getProductsbyUser(userId: string) {
-    return await this.productModel
-      .find({ user: userId })
+  async getProductsbyUser(userId: string, page: number, limit: number) {
+    const products =  await this.productModel
+      .find({ user: userId }).limit(limit).skip((page - 1) * limit).exec()
+    const itemsCount = await this.productModel.find({ user: userId }).countDocuments()
+
+    return new PaginatedDto(products, page, limit, itemsCount)
   }
 
   // crate a new product
