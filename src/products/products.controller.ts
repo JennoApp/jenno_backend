@@ -16,6 +16,11 @@ export class ProductsController {
     return this.productsService.getProducts(page, limit)
   }
 
+  @Get('/search')
+  getSearchProducts(@Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.productsService.searchProducts(query, page, limit)
+  }
+
   @Get(':id')
   getProduct(@Param('id') id) {
     return this.productsService.getProduct(id)
@@ -24,6 +29,11 @@ export class ProductsController {
   @Get('/user/:userId')
   getProductsbyUser(@Param('userId') userId, @Query('page') page: number, @Query('limit') limit: number) {
     return this.productsService.getProductsbyUser(userId, page, limit)
+  }
+
+  @Get('/searchbyuser/:username')
+  getSearchProductsbyUser(@Param('username') username, @Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.productsService.searchProductsbyUser(username, query, page, limit) 
   }
 
   @UseGuards(JwtAuthGuard)

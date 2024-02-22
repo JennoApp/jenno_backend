@@ -19,6 +19,25 @@ export class ProductsService {
     return new PaginatedDto(products, page, limit, itemsCount)
   }
 
+  async searchProducts(query: string, page: number, limit: number) {
+    if (query.trim() === "") {
+      return new PaginatedDto([], page, limit, 0)
+    }
+
+    const terms = query.split(" ").map(term => `(?=.*${term})`).join("")
+    const regexQuery = new RegExp(terms, 'i')
+
+    const products = await this.productModel
+      .find({ productname: { $regex: regexQuery } })
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .exec()
+    
+    const itemCount = await this.productModel.countDocuments({ productname: { $regex: regexQuery } })
+
+    return new PaginatedDto(products, page, limit, itemCount)
+  }
+
   // found product by id
   async getProduct(id) {
     return await this.productModel.findById(id)
@@ -31,6 +50,25 @@ export class ProductsService {
     const itemsCount = await this.productModel.find({ user: userId }).countDocuments()
 
     return new PaginatedDto(products, page, limit, itemsCount)
+  }
+
+  async searchProductsbyUser(username: string,query: string, page: number, limit: number) {
+    if (query.trim() === "") {
+      return new PaginatedDto([], page, limit, 0)
+    }
+
+    const terms = query.split(" ").map(term => `(?=.*${term})`).join("")
+    const regexQuery = new RegExp(terms, 'i')
+
+    const products = await this.productModel
+      .find({ username: username, productname: { $regex: regexQuery } })
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .exec()
+    
+    const itemCount = await this.productModel.countDocuments({ productname: { $regex: regexQuery } })
+
+    return new PaginatedDto(products, page, limit, itemCount)
   }
 
   // crate a new product
