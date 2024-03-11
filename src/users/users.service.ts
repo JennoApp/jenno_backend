@@ -31,7 +31,7 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      const { username, email, password, accountType } = user;
+      const { username, email, name, lastname, taxid, password, accountType } = user;
       if (!password || password.length < 6) {
         return {
           message: 'Password must be at least 6 characters',
@@ -48,13 +48,29 @@ export class UsersService {
       }
 
       const hashedPassword = await bcrypt.hash(password, 12);
-      const newUser = new this.userModel({
-        username: username,
-        profileImg: "",
-        email: email,
-        password: hashedPassword,
-        accountType: accountType,
-      });
+
+      let newUser
+      if (accountType === 'personal') {
+        newUser = new this.userModel({
+          username: username,
+          profileImg: "",
+          email: email,
+          password: hashedPassword,
+          accountType: accountType,
+        });
+      } else if (accountType === 'business') {
+        newUser = new this.userModel({
+          username: username,
+          profileImg: "",
+          email: email,
+          name: name,
+          lastname: lastname,
+          taxid: taxid,
+          password: hashedPassword,
+          accountType: accountType,
+        });
+      }
+
       const createUser = await newUser.save();
       return createUser;
     } catch (error) {
@@ -65,13 +81,13 @@ export class UsersService {
 
   // busca un usuario con el tipo de cuanta business
   async findOne(username: string): Promise<any | null> {
-  return await this.userModel.findOne({ username, accountType: "business"})
+    return await this.userModel.findOne({ username, accountType: "business" })
   }
 
   // busca un usuario con el tipo de cuenta personal
   async findOnePersonal(userId: string): Promise<any | null> {
     return await this.userModel.findOne({ _id: userId, accountType: "personal" })
-  } 
+  }
 
   async findOneByEmail(email: string): Promise<any | null> {
     return await this.userModel.findOne({ email })
@@ -112,8 +128,8 @@ export class UsersService {
 
       // Agregar el userId a la lista de followers del cliente
       if (!customer.followers.includes(userId)) {
-       customer.followers.push(userId)
-       await customer.save() 
+        customer.followers.push(userId)
+        await customer.save()
       }
 
       return user

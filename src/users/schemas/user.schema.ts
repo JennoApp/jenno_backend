@@ -42,6 +42,16 @@ export const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Cart'
   }],
+  // Legal information
+  name: {
+    type: String
+  },
+  lastname: {
+    type: String
+  },
+  taxid: {
+    type: String
+  },
   accountType: {
     type: String,
     enum: ['personal', 'business'],
