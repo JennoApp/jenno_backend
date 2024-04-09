@@ -12,7 +12,7 @@ import {
 import { Server, Socket } from 'socket.io'
 import { UserSocketio } from './interfaces/users-socketio'
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class websocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(@InjectModel('UserSocketio') private userSocketioModel: Model<UserSocketio>) { }
 
