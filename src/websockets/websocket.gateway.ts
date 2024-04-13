@@ -18,52 +18,52 @@ export class websocketGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   @WebSocketServer()
   server: Server
-  
+
   handleConnection(client: Socket) {
-     console.log(`client connected: ${client.id}`) 
+    console.log(`client connected: ${client.id}`)
   }
 
   handleDisconnect(client: Socket) {
-    this.removeUser(client.id)
-    client.emit("getUsers", this.getUsers())
-    console.log(`client disconnected: ${client.id}`)
+    console.log(`client disconnect: ${client.id}`)
   }
 
-  // methods for sockets 
-  async addUser(userId: string, socketId: string) {
+  @SubscribeMessage('addUser')
+  async handleAddUser(@ConnectedSocket() client: Socket, @MessageBody() userId: string) {
     try {
-      const existingUser = await this.userSocketioModel.findOne({userId})
+      const existingUser = await this.userSocketioModel.findOne({ userId })
       if (!existingUser) {
-        const newUser = new this.userSocketioModel({ userId, socketId })
+        const newUser = new this.userSocketioModel({ userId: userId, socketId: client.id })
         await newUser.save()
       }
     } catch (err) {
       console.error("Error adding user: ", err)
     }
+
+    client.emit("getUsers", async () => {
+      try {
+        const users = await this.userSocketioModel.find()
+        console.log(users)
+        // return users
+      } catch (err) {
+        console.error("Error loading users: ", err)
+      }
+    })
+    console.log(userId)
   }
 
-  async getUsers() {
+  @SubscribeMessage('removeUser')
+  async handleRemoveUser(@ConnectedSocket() client: Socket, @MessageBody() userId: string) {
     try {
-      const users = await this.userSocketioModel.find()
-      return users
+      const user = await this.userSocketioModel.find({ userId: userId })
+      if (user) {
+        const userRemoved = await this.userSocketioModel.deleteOne({ userId: userId })
+        console.log("user remove sucessful", userRemoved.acknowledged, client.id)
+      } else {
+        console.log("usuario no existe en la conexion de socket.io")
+      }
     } catch (err) {
-      console.error("Error loading users: ", err)
+      console.error(err)
     }
-  }
-
-  async removeUser(socketId: string) {
-    try {
-      const userRemoved = await this.userSocketioModel.deleteOne({ socketId })
-      return userRemoved
-    } catch (err) {
-      console.error("Error removing user: ", err)
-    }
-  }
-
-  @SubscribeMessage('addUser')
-  async handleAddUser(@ConnectedSocket() client: Socket, @MessageBody() userId: string) {
-    this.addUser(userId, client.id)
-    client.emit("getUsers", this.getUsers())
   }
 
   // this method is used to send messages to all connected clients
