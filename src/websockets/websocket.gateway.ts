@@ -66,6 +66,20 @@ export class websocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
   }
 
+  @SubscribeMessage('sendMessage')
+  async handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() { senderId, receiverId, text }) {
+    const user = await this.userSocketioModel.find({ userId: receiverId })
+    if (user && user.length > 0 && user[0].socketId) {
+      client?.to(user[0].socketId).emit("getMessage", {
+        senderId,
+        text
+      })
+    } else {
+      console.error("User not found or missing socketId property.")
+    }
+    console.log({ senderId, receiverId, text })
+  }
+
   // this method is used to send messages to all connected clients
   @SubscribeMessage('message')
   handleMessages(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
