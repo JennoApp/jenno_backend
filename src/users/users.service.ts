@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { User } from './interfaces/User';
 import { CreateUserDto } from './dto/createuser.dto';
 import * as bcrypt from 'bcrypt';
+import { PaginatedDto } from './dto/paginated.dto';
 
 
 @Injectable()
@@ -136,5 +137,12 @@ export class UsersService {
     } catch (error) {
       throw new Error(`Error al agregar el customerId y el userId: ${error.message}`)
     }
+  }
+
+  async getFollowers(id: string, page: number, limit: number) {
+    const { followers } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
+    const followersCount = await this.userModel.findById(id).countDocuments()
+
+    return new PaginatedDto(followers, page, limit, followersCount)
   }
 }

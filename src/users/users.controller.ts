@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -14,6 +14,11 @@ export class UsersController {
   @Get(':id')
   getUser(@Param('id') id) {
     return this.usersService.getUser(id)
+  }
+
+  @Get('/followers/:id')
+  getFollowers(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.usersService.getFollowers(id, page, limit)
   }
 
   @Get('/getprofileimg/:id')
