@@ -42,6 +42,15 @@ export const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Cart'
   }],
+  // Shipping info
+  shippingInfo: {
+    country: String, 
+    address: String,
+    city:  String,
+    state: String,
+    postalCode: String,
+    phoneNumber: Number
+  },
   // Legal information
   name: {
     type: String

@@ -145,4 +145,27 @@ export class UsersService {
 
     return new PaginatedDto(followers, page, limit, followersCount)
   }
+
+  async updateShippingInfo(userId, info: {country, address, city, state, postalCode, phoneNumber}) {
+    const shippingInfo = {
+      country: info.country,
+      address: info.address,
+      city: info.city,
+      state: info.state,
+      postalCode: info.postalCode,
+      phoneNumber: info.phoneNumber   
+    }
+
+    try {
+       const updateInfo = await this.userModel.findByIdAndUpdate(
+      {_id: userId},
+      { $set: { shippingInfo: shippingInfo }},
+      { new: true }
+    )
+
+    return updateInfo
+    } catch (error) {
+      console.error("Error al actualizar usuario:", error)
+    }  
+  }
 }

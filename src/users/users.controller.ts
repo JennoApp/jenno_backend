@@ -72,4 +72,9 @@ export class UsersController {
   following(@Param('id') id: string, @Request() req) {
     return this.usersService.following(id, req?.user?.userId)
   }
+
+  @Put('/shipping/:id')
+  updateShippingInfo(@Param('id') id: string, @Body() shippingInfo) {
+    return this.usersService.updateShippingInfo(id, shippingInfo)
+  }
 }

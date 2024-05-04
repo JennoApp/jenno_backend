@@ -6,7 +6,7 @@ import { PaymentsService } from './payments.service'
 export class PaymentsController {
   constructor (private paymentsService: PaymentsService) {}
 
-  @Post('stripe')
+  @Post('/stripe')
   createPayment(@Body() items: any[]) {
     return this.paymentsService.createSession(items)
   }
