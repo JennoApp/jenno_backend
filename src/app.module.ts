@@ -8,6 +8,7 @@ import { ProductsModule } from './products/products.module';
 import { WebSocketModule } from './websockets/websocket.module'
 import { ChatModule } from './chat/chat.module'
 import { PaymentsModule } from './payments/payments.module'
+import { OrdersModule } from './orders/orders.module'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PaymentsModule } from './payments/payments.module'
     ProductsModule,
     ChatModule,
     PaymentsModule,
+    OrdersModule,
     WebSocketModule
   ],
   controllers: [AppController],

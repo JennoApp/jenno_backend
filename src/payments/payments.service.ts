@@ -12,13 +12,12 @@ export class PaymentsService {
     const session = await stripe.checkout.sessions.create({
       line_items: items,
       mode: 'payment',
-      success_url: 'http://localhost:5173/cart/success',
-      cancel_url: 'http://localhost:5173/cart/cancelorder'
+      success_url: 'http://localhost:5173/cart/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost:5173',
     }) 
 
     return session
   }
 
 }
-
 

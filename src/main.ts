@@ -4,7 +4,8 @@ import { IoAdapter } from '@nestjs/platform-socket.io'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    cors: true
+    cors: true,
+    rawBody: true
   });
   
   app.useWebSocketAdapter(new IoAdapter(app))
