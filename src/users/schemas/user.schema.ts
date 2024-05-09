@@ -30,11 +30,11 @@ export const UserSchema = new Schema({
   },
   products: [{
     type: Schema.Types.ObjectId,
-    ref: 'Products'
+    ref: 'Product'
   }],
   services: [{
     type: Schema.Types.ObjectId,
-    ref: 'Services'
+    ref: 'Service'
   }],
   followers: [String],
   following: [String],
@@ -51,6 +51,11 @@ export const UserSchema = new Schema({
     postalCode: String,
     phoneNumber: Number
   },
+  // Orders
+  orders:[{
+    type: Schema.Types.ObjectId,
+    ref: 'Order'
+  }],
   // Legal information
   name: {
     type: String

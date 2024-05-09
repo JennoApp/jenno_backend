@@ -5,7 +5,6 @@ import { ProductsService } from './products.service'
 import { ProductsController } from './products.controller'
 import { UsersModule } from 'src/users/users.module'
 
-
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -14,7 +13,7 @@ import { UsersModule } from 'src/users/users.module'
     UsersModule
   ],
   controllers: [ProductsController],
-  providers: [ProductsService]
+  providers: [ProductsService],
 })
 
 export class ProductsModule { }
