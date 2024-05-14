@@ -1,4 +1,4 @@
-import { Controller, Headers, Get, Post, RawBodyRequest, Req, Body } from "@nestjs/common";
+import { Controller, Headers, Get, Post, RawBodyRequest, Req, Body, Param } from "@nestjs/common";
 import { OrdersService } from './orders.service'
 import { UsersService } from '../users/users.service'
 import { OrderDto } from "./dto/order.dto";
@@ -25,19 +25,35 @@ export class OrdersController {
     return this.ordersService.getOrders()
   }
 
+  @Get(':id')
+  getOrder(@Param('id') id) {
+    return this.ordersService.getOrder(id)
+  }
+
   @Post()
   async createOrder(@Body() order: OrderDto) {
     const newOrder = {
       product: order.product,
       buyerId: order.buyerId,
       sellerId: order.sellerId,
+      buyerName: order.buyerName,
+      buyerProfileImg: order.buyerProfileImg,
+      amount: order.amount,
       status: order.status
     }
 
     const saveOrder = await this.ordersService.createOrder(newOrder)
-    const user: any = await this.usersService.getUser(order?.product?.user) 
-    user.orders = user?.orders.concat(saveOrder._id)
-    user.save()
+
+    // guarda Id de Orden en usuario que vende
+    const userSeller: any = await this.usersService.getUser(order?.sellerId) 
+    userSeller.orders = [saveOrder._id, ...userSeller.orders]
+    userSeller.save()
+
+    // guarda Id de Orden en usuario que compra
+    const userBuyer: any = await this.usersService.getUser(order?.buyerId)
+    userBuyer.shopping = [saveOrder._id, ...userBuyer.shopping]
+    userBuyer.save()
+  
 
     return {
       msg: 'Order created',

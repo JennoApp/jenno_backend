@@ -56,6 +56,11 @@ export const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Order'
   }],
+  // Shopping
+  shopping: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Order'
+  }], 
   // Legal information
   name: {
     type: String

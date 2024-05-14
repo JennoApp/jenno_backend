@@ -7,5 +7,7 @@ export interface User extends Document {
   password: string,
   accountType: string,
   following: string[],
-  followers: string[]
+  followers: string[],
+  orders: [],
+  shopping: []
 }

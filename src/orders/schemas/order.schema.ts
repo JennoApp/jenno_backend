@@ -12,6 +12,17 @@ export const OrderSchema = new Schema({
     type: String,
     required: true
   },
+  buyerName: {
+    type: String,
+    required: true
+  },
+  buyerProfileImg: {
+    type: String,
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
   status: {
     type: String,
     enum: ['pending', 'completed', 'cancelled'],

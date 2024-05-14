@@ -31,6 +31,10 @@ export class OrdersService {
     return await this.orderModel.find()
   }
 
+  async getOrder(id) {
+    return await this.orderModel.findById(id)
+  }
+
   async createOrder(order: OrderDto) {
     const newOrder = new this.orderModel(order)
     return await newOrder.save()
