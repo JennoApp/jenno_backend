@@ -175,4 +175,11 @@ export class UsersService {
 
     return new PaginatedDto(orders, page, limit, ordersCount)
   }
+
+  async getShopping(id: string, page: number, limit: number) {
+    const { shopping } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
+    const shoppingCount = await this.userModel.findById(id).countDocuments()
+
+    return new PaginatedDto(shopping, page, limit, shoppingCount)
+  }
 }

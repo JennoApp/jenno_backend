@@ -1,6 +1,7 @@
 import { Controller, Headers, Get, Post, RawBodyRequest, Req, Body, Param } from "@nestjs/common";
 import { OrdersService } from './orders.service'
 import { UsersService } from '../users/users.service'
+import { ProductsService } from "src/products/products.service";
 import { OrderDto } from "./dto/order.dto";
 
 
@@ -8,7 +9,8 @@ const endpointSecret = "whsec_k0B1zmtOLhlvDI7TWq48Crwty89rEIIu"
 
 @Controller('orders')
 export class OrdersController {
-  constructor(
+  constructor(    
+    private productsService: ProductsService,
     private ordersService: OrdersService,
     private usersService: UsersService
   ) {}
@@ -48,6 +50,11 @@ export class OrdersController {
     const userSeller: any = await this.usersService.getUser(order?.sellerId) 
     userSeller.orders = [saveOrder._id, ...userSeller.orders]
     userSeller.save()
+
+    // obtiene el producto y resta la cantidad de la orden
+    const product: any = await this.productsService.getProduct(order.product?._id)
+    product.quantity -= order.amount
+    product.save()
 
     // guarda Id de Orden en usuario que compra
     const userBuyer: any = await this.usersService.getUser(order?.buyerId)

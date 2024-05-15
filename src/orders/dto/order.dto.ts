@@ -1,6 +1,7 @@
 
 interface Product {
-  user: string
+  _id: string,
+  user: string,
 }
 
 export class OrderDto {

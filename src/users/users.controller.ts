@@ -26,6 +26,11 @@ export class UsersController {
     return this.usersService.getOrders(id, page, limit)
   }
 
+  @Get('/shopping/:id')
+  getShopping(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.usersService.getShopping(id, page, limit)
+  }
+
   @Get('/getprofileimg/:id')
   getProfileImg(@Param('id') id) {
     return this.usersService.getProfileImg(id)
