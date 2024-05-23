@@ -23,21 +23,7 @@ export const ProductSchema = new Schema({
   requirements: String,
   policies: String,
   description: String,
-  category: {
-    type: String,
-    enum: [
-      'electronics',
-      'sports',
-      'beaty',
-      'book'
-    ]
-  },
-  attributes: {
-    talla: {
-      type: String,
-      enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-    }
-  },
+  category: String,
   weight: Number,
   dimensions: {
     type: dimensionsSchema
@@ -64,17 +50,28 @@ export const ProductSchema = new Schema({
       }
     }
   ],
+  // Options for product like color, size, etc.
+  options: [{
+    name: String,
+    optionslist: []
+  }],
+  // Especifications for product or service
+  especifications: [{
+    title: String,
+    content: String
+  }],
+  //
+  info: {
+    type: String
+  },
+  // user information
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User'
   },
   username: String,
   userProfileImg: String,
-  /*
-  createAt: {
-    type: Date,
-    default: Date.now
-  }*/
+  
 }, {
   timestamps: true
 })

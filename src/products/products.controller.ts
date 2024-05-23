@@ -31,6 +31,11 @@ export class ProductsController {
     return this.productsService.getProductsbyUser(userId, page, limit)
   }
 
+  @Get('/user/random/:userId')
+  getProductsRandombyUser(@Param('userId') userId) {
+    return this.productsService.getProductsRandombyUser(userId)
+  }
+
   @Get('/searchbyuser/:username')
   getSearchProductsbyUser(@Param('username') username, @Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
     return this.productsService.searchProductsbyUser(username, query, page, limit) 
@@ -41,6 +46,7 @@ export class ProductsController {
   async createProduct(@Request() req, @Body() product: ProductDto) {
     const newProduct = {
       productname: product.productname,
+      description: product.description,
       imgs: product.imgs,
       price: product.price,
       quantity: product.quantity,
@@ -54,7 +60,10 @@ export class ProductsController {
       /// 
       status: product.status,
       user: req.user.userId,
-      username: req.user.username
+      username: req.user.username,
+      ///
+      options: product.options,
+      especifications: product.especifications
     }
 
     const saveProduct = await this.productsService.createProduct(newProduct)

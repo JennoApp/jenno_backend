@@ -27,4 +27,6 @@ export class ProductDto {
   user?: string;
   username?: string;
   userProfileImg?: string;
+  options?: []
+  especifications?: []
 }

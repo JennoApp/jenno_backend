@@ -32,7 +32,7 @@ export class ProductsService {
       .limit(limit)
       .skip((page - 1) * limit)
       .exec()
-    
+
     const itemCount = await this.productModel.countDocuments({ productname: { $regex: regexQuery } })
 
     return new PaginatedDto(products, page, limit, itemCount)
@@ -45,14 +45,30 @@ export class ProductsService {
 
   // return all products for single users
   async getProductsbyUser(userId: string, page: number, limit: number) {
-    const products =  await this.productModel
+    const products = await this.productModel
       .find({ user: userId }).limit(limit).skip((page - 1) * limit).exec()
     const itemsCount = await this.productModel.find({ user: userId }).countDocuments()
 
     return new PaginatedDto(products, page, limit, itemsCount)
   }
 
-  async searchProductsbyUser(username: string,query: string, page: number, limit: number) {
+  // return 4 products random for user
+  async getProductsRandombyUser(userId: string) {
+    const productsCount = await this.productModel.countDocuments({ user: userId })
+
+    if (productsCount <= 4) {
+      const products = await this.productModel.find({ user: userId }).limit(4)
+      return products
+    } else {
+      const products = await this.productModel.aggregate([
+        { $match: { user: userId } },
+        { $sample: { size: 4 } }
+      ])
+      return products
+    }
+  }
+
+  async searchProductsbyUser(username: string, query: string, page: number, limit: number) {
     if (query.trim() === "") {
       return new PaginatedDto([], page, limit, 0)
     }
@@ -65,7 +81,7 @@ export class ProductsService {
       .limit(limit)
       .skip((page - 1) * limit)
       .exec()
-    
+
     const itemCount = await this.productModel.countDocuments({ productname: { $regex: regexQuery } })
 
     return new PaginatedDto(products, page, limit, itemCount)
