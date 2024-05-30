@@ -104,6 +104,25 @@ export class UsersService {
     }
   }
 
+  // Actualizar informacion del usuario
+  async updateUser(userId: string, user: any) {
+    try {
+      const userInfo = await this.userModel.findByIdAndUpdate(userId, {
+        username: user.username,
+        email: user.email,
+        bio: user.bio,
+        country: user.country,
+        legalname: user.legalname,
+        legallastname: user.legallastname,
+        taxid: user.taxid
+      })
+
+      return userInfo
+    } catch (err) {
+      throw new Error("Error al actualizar la informacion del usuario")
+    }
+  }
+
   // Agregar Id a la lista de Following
   async following(customerId: string, userId: string) {
     try {

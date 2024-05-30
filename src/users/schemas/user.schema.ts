@@ -62,10 +62,10 @@ export const UserSchema = new Schema({
     ref: 'Order'
   }], 
   // Legal information
-  name: {
+  legalname: {
     type: String
   },
-  lastname: {
+  legallastname: {
     type: String
   },
   taxid: {

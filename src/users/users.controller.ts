@@ -78,6 +78,13 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('/updateuser')
+  updateUser(@Body() user, @Request() req) {
+    return this.usersService.updateUser(req?.user?.userId, user)
+
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('/following/:id')
   following(@Param('id') id: string, @Request() req) {
     return this.usersService.following(id, req?.user?.userId)
