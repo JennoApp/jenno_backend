@@ -84,6 +84,7 @@ export class UsersController {
 
   }
 
+  
   @UseGuards(JwtAuthGuard)
   @Post('/following/:id')
   following(@Param('id') id: string, @Request() req) {
