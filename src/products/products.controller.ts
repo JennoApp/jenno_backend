@@ -12,8 +12,8 @@ export class ProductsController {
   ) { }
 
   @Get()
-  getProducts(@Query('page') page: number, @Query('limit') limit: number) {
-    return this.productsService.getProducts(page, limit)
+  getProducts(@Query('page') page: number, @Query('limit') limit: number, @Query('country') country: string) {
+    return this.productsService.getProducts(page, limit, country)
   }
 
   @Get('/search')
@@ -27,8 +27,8 @@ export class ProductsController {
   }
 
   @Get('/user/:userId')
-  getProductsbyUser(@Param('userId') userId, @Query('page') page: number, @Query('limit') limit: number) {
-    return this.productsService.getProductsbyUser(userId, page, limit)
+  getProductsbyUser(@Param('userId') userId, @Query('page') page: number, @Query('limit') limit: number, @Query('country') country: string) {
+    return this.productsService.getProductsbyUser(userId, page, limit, country)
   }
 
   @Get('/user/random/:userId')

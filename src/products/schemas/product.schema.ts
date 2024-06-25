@@ -71,7 +71,7 @@ export const ProductSchema = new Schema({
   },
   username: String,
   userProfileImg: String,
-  
+  country: [String], 
 }, {
   timestamps: true
 })
