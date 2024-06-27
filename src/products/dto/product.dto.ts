@@ -1,7 +1,7 @@
 
 export class ProductDto {
   productname: string;
-  imgs?: [string];
+  imgs?: string[];
   price: number;
   quantity: number;
   location?: string;
@@ -11,22 +11,23 @@ export class ProductDto {
   policies?: string;
   description?: string;
   category?: string;
-  attributes?: [string];
+  attributes?: string[];
   weight?: number;
   dimensions?: {
     length?: number,
     width?: number,
     height?: number
   };
-  status?: [string];
+  status?: string[];
   visibility?: boolean;
-  Tags?: [string];
+  Tags?: string[];
   score?: number;
-  reviews?: [string];
-  discounts?: [string];
+  reviews?: string[];
+  discounts?: string[];
   user?: string;
   username?: string;
+  country: string[]
   userProfileImg?: string;
-  options?: []
-  especifications?: []
+  options?: any[]
+  especifications?: any[]
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { Product } from './interfaces/Product'
 import { ProductDto } from './dto/product.dto';
 import { PaginatedDto } from './dto/paginated.dto';
@@ -58,8 +58,9 @@ export class ProductsService {
   }
 
   // return all products for single users
-  async getProductsbyUser(userId, page: number, limit: number, country?: string) {
-    const query: any = { user: userId }
+  async getProductsbyUser(userId: string, page: number, limit: number, country?: string) {
+    const idCast = new mongoose.Types.ObjectId(userId)
+    const query: any = { user: idCast }
 
     if (country) {
       query.country = { $in: [country] }
@@ -68,19 +69,13 @@ export class ProductsService {
     const itemsCount = await this.productModel.countDocuments(query)
 
     const products = await this.productModel
-    .find(query)
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .exec();
-
-    // const products = await this.productModel
-    //   .aggregate([
-    //     { $match: query },
-    //     { $skip: (page - 1) * limit },
-    //     { $limit: Number(limit) },
-    //     { $sample: { size: 1 } },
-    //   ])
-    //   .exec()
+      .aggregate([
+        { $match: query },
+        { $sample: { size: Math.min(Number(limit), itemsCount) } },
+        { $skip: (page - 1) * Number(limit) },
+        { $limit: Number(limit) }
+      ])
+      .exec()
 
     return new PaginatedDto(products, page, limit, itemsCount)
   }
@@ -93,10 +88,14 @@ export class ProductsService {
       const products = await this.productModel.find({ user: userId }).limit(4)
       return products
     } else {
-      const products = await this.productModel.aggregate([
-        { $match: { user: userId } },
-        { $sample: { size: 4 } }
-      ])
+      const idCast = new mongoose.Types.ObjectId(userId)
+      const products = await this.productModel
+        .aggregate([
+          { $match: { user: idCast } },
+          { $sample: { size: 4 } }
+        ])
+        .exec()
+
       return products
     }
   }

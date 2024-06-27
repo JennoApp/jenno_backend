@@ -38,7 +38,7 @@ export class ProductsController {
 
   @Get('/searchbyuser/:username')
   getSearchProductsbyUser(@Param('username') username, @Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
-    return this.productsService.searchProductsbyUser(username, query, page, limit) 
+    return this.productsService.searchProductsbyUser(username, query, page, limit)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -61,6 +61,9 @@ export class ProductsController {
       status: product.status,
       user: req.user.userId,
       username: req.user.username,
+      country: product.country && Array.isArray(product.country) && product.country.length > 0
+        ? product.country
+        : [req.user.country],
       ///
       options: product.options,
       especifications: product.especifications
