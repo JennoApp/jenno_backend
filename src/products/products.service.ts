@@ -57,7 +57,7 @@ export class ProductsService {
     return await this.productModel.findById(id)
   }
 
-  // return all products for single users
+  // return all products for single user
   async getProductsbyUser(userId: string, page: number, limit: number, country?: string) {
     const idCast = new mongoose.Types.ObjectId(userId)
     const query: any = { user: idCast }
@@ -75,6 +75,27 @@ export class ProductsService {
         { $skip: (page - 1) * Number(limit) },
         { $limit: Number(limit) }
       ])
+      .exec()
+
+    return new PaginatedDto(products, page, limit, itemsCount)
+  }
+
+  // return all products for single user in paginated order
+  async getProductsbyUserOrdered(userId: string, page: number, limit: number, country?: string) {
+    const idCast = new mongoose.Types.ObjectId(userId)
+    const query: any = { user: idCast }
+
+    if (country) {
+      query.country = { $in: [country] }
+    }
+
+    const itemsCount = await this.productModel.countDocuments(query)
+
+    const products = await this.productModel
+      .find(query)
+      // .sort({ _id: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
       .exec()
 
     return new PaginatedDto(products, page, limit, itemsCount)

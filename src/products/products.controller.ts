@@ -31,6 +31,11 @@ export class ProductsController {
     return this.productsService.getProductsbyUser(userId, page, limit, country)
   }
 
+  @Get('/admin/user/:userId')
+  getProductsbyUserOrdered(@Param('userId') userId, @Query('page') page: number, @Query('limit') limit: number, @Query('country') country: string) {
+    return this.productsService.getProductsbyUserOrdered(userId, page, limit, country)
+  }
+
   @Get('/user/random/:userId')
   getProductsRandombyUser(@Param('userId') userId) {
     return this.productsService.getProductsRandombyUser(userId)
