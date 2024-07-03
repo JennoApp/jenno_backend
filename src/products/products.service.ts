@@ -13,7 +13,9 @@ export class ProductsService {
 
   // return all products in database
   async getProducts(page: number, limit: number, country?: string) {
-    const query: any = {}
+    const query: any = {
+      visibility: true
+    }
 
     if (country) {
       query.country = { $in: [country] }
@@ -60,7 +62,10 @@ export class ProductsService {
   // return all products for single user
   async getProductsbyUser(userId: string, page: number, limit: number, country?: string) {
     const idCast = new mongoose.Types.ObjectId(userId)
-    const query: any = { user: idCast }
+    const query: any = { 
+      user: idCast,
+      visibility: true
+    }
 
     if (country) {
       query.country = { $in: [country] }
@@ -106,13 +111,13 @@ export class ProductsService {
     const productsCount = await this.productModel.countDocuments({ user: userId })
 
     if (productsCount <= 4) {
-      const products = await this.productModel.find({ user: userId }).limit(4)
+      const products = await this.productModel.find({ user: userId, visibility: true }).limit(4)
       return products
     } else {
       const idCast = new mongoose.Types.ObjectId(userId)
       const products = await this.productModel
         .aggregate([
-          { $match: { user: idCast } },
+          { $match: { user: idCast, visibility: true } },
           { $sample: { size: 4 } }
         ])
         .exec()
