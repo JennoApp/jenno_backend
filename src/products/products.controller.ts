@@ -49,40 +49,78 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createProduct(@Request() req, @Body() product: ProductDto) {
-    const newProduct = {
-      productname: product.productname,
-      description: product.description,
-      imgs: product.imgs,
-      price: product.price,
-      quantity: product.quantity,
-      SKU: product.SKU,
-      category: product.category,
-      weight: product.weight,
-      /// dimensions
-      length: product.dimensions?.length,
-      width: product.dimensions?.width,
-      height: product.dimensions?.height,
-      /// 
-      status: product.status,
-      user: req.user.userId,
-      username: req.user.username,
-      country: product.country && Array.isArray(product.country) && product.country.length > 0
-        ? product.country
-        : [req.user.country],
-      ///
-      options: product.options,
-      especifications: product.especifications
-    }
+    if (product.productId !== null || product.productId !== undefined) {
+      // Actualizar producto
+      const updateProduct = {
+        productId: product.productId,
+        productname: product.productname,
+        description: product.description,
+        imgs: product.imgs,
+        price: product.price,
+        quantity: product.quantity,
+        SKU: product.SKU,
+        category: product.category,
+        weight: product.weight,
+        /// dimensions
+        length: product.dimensions?.length,
+        width: product.dimensions?.width,
+        height: product.dimensions?.height,
+        /// 
+        status: product.status,
+        user: req.user.userId,
+        username: req.user.username,
+        country: product.country && Array.isArray(product.country) && product.country.length > 0
+          ? product.country
+          : [req.user.country],
+        ///
+        options: product.options,
+        especifications: product.especifications
+      }
 
-    const saveProduct = await this.productsService.createProduct(newProduct)
+      await this.productsService.updateProduct(product.productId, updateProduct)
 
-    const user: any = await this.usersService.getUser(req.user.userId)
-    user.products = user.products.concat(saveProduct._id)
-    user.save()
+      return {
+        msg: 'Product updated',
+        user: req.user.userId
+      }
 
-    return {
-      msg: 'Product created & add to user products list',
-      user: req.user.userId
+    } else {
+      // Crear producto
+      const newProduct = {
+        productname: product.productname,
+        description: product.description,
+        imgs: product.imgs,
+        price: product.price,
+        quantity: product.quantity,
+        SKU: product.SKU,
+        category: product.category,
+        weight: product.weight,
+        /// dimensions
+        length: product.dimensions?.length,
+        width: product.dimensions?.width,
+        height: product.dimensions?.height,
+        /// 
+        status: product.status,
+        user: req.user.userId,
+        username: req.user.username,
+        country: product.country && Array.isArray(product.country) && product.country.length > 0
+          ? product.country
+          : [req.user.country],
+        ///
+        options: product.options,
+        especifications: product.especifications
+      }
+
+      const saveProduct = await this.productsService.createProduct(newProduct)
+
+      const user: any = await this.usersService.getUser(req.user.userId)
+      user.products = user.products.concat(saveProduct._id)
+      user.save()
+
+      return {
+        msg: 'Product created & add to user products list',
+        user: req.user.userId
+      }
     }
   }
 }

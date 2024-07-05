@@ -150,4 +150,10 @@ export class ProductsService {
     const newProduct = new this.productModel(product)
     return newProduct.save()
   }
+
+  // update product
+  async updateProduct(id, product: ProductDto) {
+    const updated = await this.productModel.findByIdAndUpdate(id, product)
+    return updated.save()
+  }
 }

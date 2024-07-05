@@ -1,5 +1,6 @@
 
 export class ProductDto {
+  productId?: string;
   productname: string;
   imgs?: string[];
   price: number;
