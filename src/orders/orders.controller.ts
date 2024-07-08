@@ -27,9 +27,14 @@ export class OrdersController {
     return this.ordersService.getOrders()
   }
 
-  @Get(':id')
-  getOrder(@Param('id') id) {
-    return this.ordersService.getOrder(id)
+  // @Get(':id')
+  // getOrder(@Param('id') id) {
+  //   return this.ordersService.getOrder(id)
+  // }
+
+  @Get('/totalrevenue/:userid')
+  getTotalRevenue(@Param('userid') userid) {
+    return this.ordersService.getTotalRevenue(userid)
   }
 
   @Post()

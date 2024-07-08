@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Request, Body, UseGuards, Param, Query } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -62,9 +62,11 @@ export class ProductsController {
         category: product.category,
         weight: product.weight,
         /// dimensions
-        length: product.dimensions?.length,
-        width: product.dimensions?.width,
-        height: product.dimensions?.height,
+        dimensions: {
+          length: product.dimensions.length,
+          width: product.dimensions.width,
+          height: product.dimensions.height,
+        }, 
         /// 
         status: product.status,
         user: req.user.userId,
@@ -96,9 +98,10 @@ export class ProductsController {
         category: product.category,
         weight: product.weight,
         /// dimensions
-        length: product.dimensions?.length,
-        width: product.dimensions?.width,
-        height: product.dimensions?.height,
+        dimensions: {},
+        length: product.dimensions.length,
+        width: product.dimensions.width,
+        height: product.dimensions.height,
         /// 
         status: product.status,
         user: req.user.userId,
@@ -122,5 +125,10 @@ export class ProductsController {
         user: req.user.userId
       }
     }
+  }
+
+  @Delete(':productid')
+  deleteProduct(@Param('productid') productid) {
+    return this.productsService.deleteProduct(productid)
   }
 }

@@ -156,4 +156,13 @@ export class ProductsService {
     const updated = await this.productModel.findByIdAndUpdate(id, product)
     return updated.save()
   }
+
+  // Delete Product
+  async deleteProduct(id) {
+    const productDeleted = await this.productModel.findByIdAndDelete(id)
+    return {
+      productDeleted,
+      msg: 'product deleted'
+    }
+  }
 }

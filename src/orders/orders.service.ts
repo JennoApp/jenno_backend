@@ -39,4 +39,15 @@ export class OrdersService {
     const newOrder = new this.orderModel(order)
     return await newOrder.save()
   }
+
+  async getTotalRevenue(userId) {
+    const result = await this.orderModel.aggregate([
+      { $match: { sellerId: userId, status: 'completed'} },
+      { $group: {_id: null, totalRevenue: { $sum: { $multiply: ['$product.price', '$amount'] } }}}
+    ])
+
+    console.log({result})
+
+    return result.length > 0 ? result[0].totalRevenue : 0
+  }
 }

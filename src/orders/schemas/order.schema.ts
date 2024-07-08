@@ -4,6 +4,9 @@ export const OrderSchema = new Schema({
   product: {
     type: Object,
   },
+  price: {
+    type: Number
+  },
   buyerId: {
     type: String,
     required: true
