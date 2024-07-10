@@ -60,6 +60,7 @@ export class ProductsController {
         quantity: product.quantity,
         SKU: product.SKU,
         category: product.category,
+        shippingfee: product.shippingfee,
         weight: product.weight,
         /// dimensions
         dimensions: {
@@ -96,6 +97,7 @@ export class ProductsController {
         quantity: product.quantity,
         SKU: product.SKU,
         category: product.category,
+        shippingfee: product.shippingfee,
         weight: product.weight,
         /// dimensions
         dimensions: {},

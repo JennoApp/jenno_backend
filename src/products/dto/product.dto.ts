@@ -12,6 +12,7 @@ export class ProductDto {
   policies?: string;
   description?: string;
   category?: string;
+  shippingfee?: number;
   attributes?: string[];
   weight?: number;
   dimensions?: {

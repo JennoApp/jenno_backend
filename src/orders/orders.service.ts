@@ -50,4 +50,13 @@ export class OrdersService {
 
     return result.length > 0 ? result[0].totalRevenue : 0
   }
+
+  async getNumberOfSales(userId) {
+    const result = await this.orderModel.aggregate([
+      { $match: { sellerId: userId, status: 'completed' } },
+      { $count: 'numberOfSales' }
+    ])
+
+    return result.length > 0 ? result[0].numberOfSales : 0
+  }
 }
