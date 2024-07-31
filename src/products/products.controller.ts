@@ -49,7 +49,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createProduct(@Request() req, @Body() product: ProductDto) {
-    if (product.productId !== null || product.productId !== undefined) {
+    if (product.productId && (product.productId !== null || product.productId !== undefined) ) {
       // Actualizar producto
       const updateProduct = {
         productId: product.productId,
@@ -120,7 +120,7 @@ export class ProductsController {
 
       const user: any = await this.usersService.getUser(req.user.userId)
       user.products = user.products.concat(saveProduct._id)
-      user.save()
+      await user.save()
 
       return {
         msg: 'Product created & add to user products list',
