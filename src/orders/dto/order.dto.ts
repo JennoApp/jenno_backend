@@ -4,6 +4,11 @@ interface Product {
   user: string,
 }
 
+interface selectedOption {
+  name: string
+  value: string
+}
+
 export class OrderDto {
   product: Product;
   buyerId: string;
@@ -12,4 +17,5 @@ export class OrderDto {
   buyerProfileImg: string;
   amount: number;
   status: string;
+  selectedOptions: selectedOption[];
 }
