@@ -51,6 +51,11 @@ export class UsersController {
     return this.usersService.findOnePersonal(userId)
   }
 
+  @Get('/shippingInfo/:userId')
+  getShippingInfo(@Param('userId') userId) {
+    return this.usersService.getShippingInfo(userId)
+  }
+
   @Post()
   createUser(@Body() user: any) {
     return this.usersService.createUser(user)

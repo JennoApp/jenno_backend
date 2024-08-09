@@ -201,4 +201,18 @@ export class UsersService {
 
     return new PaginatedDto(shopping, page, limit, shoppingCount)
   }
+
+  async getShippingInfo(userId) {
+    try {
+      const shippingInfo = await this.userModel.findById(userId).select('shippingInfo')
+      if (!shippingInfo) {
+        throw new Error('Usuario no encontrado')
+      }
+
+      return shippingInfo
+    } catch (error) {
+      console.log('Error al obtener la informacion de envio:', error)
+      throw error
+    }
+  }
 }
