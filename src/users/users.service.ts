@@ -196,8 +196,13 @@ export class UsersService {
   }
 
   async getShopping(id: string, page: number, limit: number) {
-    const { shopping } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
-    const shoppingCount = await this.userModel.findById(id).countDocuments()
+    // const { shopping } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
+    // const shoppingCount = await this.userModel.findById(id).countDocuments()
+    const user = await this.userModel.findById(id).exec()
+
+    const shopping = user.shopping.slice((page - 1) * limit, page * limit)
+
+    const shoppingCount = user.shopping.length
 
     return new PaginatedDto(shopping, page, limit, shoppingCount)
   }

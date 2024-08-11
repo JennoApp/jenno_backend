@@ -28,7 +28,7 @@ export const OrderSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'completed', 'cancelled'],
+    enum: ['pending', 'sending', 'completed', 'cancelled', 'returned', 'refunded', 'payment_failed', 'on_hold'],
     default: 'pending'
   }
 }, {
