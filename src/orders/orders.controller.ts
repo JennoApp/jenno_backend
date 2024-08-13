@@ -1,4 +1,4 @@
-import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, InternalServerErrorException, NotFoundException, Put } from '@nestjs/common'
 import { Controller, Headers, Get, Post, RawBodyRequest, Req, Body, Param } from "@nestjs/common";
 import { OrdersService } from './orders.service'
 import { UsersService } from '../users/users.service'
@@ -62,7 +62,7 @@ export class OrdersController {
 
       // guarda Id de Orden en usuario que vende
       const userSeller: any = await this.usersService.getUser(order?.sellerId)
-      userSeller.orders = [saveOrder._id, ...userSeller.orders]
+      userSeller.orders = [...userSeller.orders, saveOrder._id]
       userSeller.save()
 
       // obtiene el producto y resta la cantidad de la orden
@@ -72,7 +72,7 @@ export class OrdersController {
 
       // guarda Id de Orden en usuario que compra
       const userBuyer: any = await this.usersService.getUser(order?.buyerId)
-      userBuyer.shopping = [saveOrder._id, ...userBuyer.shopping]
+      userBuyer.shopping = [...userBuyer.shopping, saveOrder._id]
       userBuyer.save()
 
       return {
@@ -89,5 +89,16 @@ export class OrdersController {
         throw new InternalServerErrorException('An unexpected error occurred')
       }
     }
+  }
+
+  @Put('status/:id')
+  updateOrderStatus(@Param('id') id: string, @Body('status') status: string) {
+    const updateOrder = this.ordersService.updateStatus(id, status)
+
+    if (!updateOrder) {
+      throw new NotFoundException('Order not found')
+    }
+
+    return updateOrder
   }
 }

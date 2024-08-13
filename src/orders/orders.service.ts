@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from "mongoose";
 import Stripe from 'stripe'
@@ -59,4 +59,17 @@ export class OrdersService {
 
     return result.length > 0 ? result[0].numberOfSales : 0
   }
+
+  async updateStatus(id: string, status: string) {
+    const order = await this.orderModel.findById(id)
+
+    if (!order) {
+      throw new NotFoundException('Order not found')
+    }
+
+    order.status = status
+    order.save()
+
+    return order
+  } 
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './interfaces/User';
@@ -188,11 +188,52 @@ export class UsersService {
     }
   }
 
-  async getOrders(id: string, page: number, limit: number) {
-    const { orders } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
-    const ordersCount = await this.userModel.findById(id).countDocuments()
+  // async getOrders(id: string, page: number, limit: number) {
+  //   const { orders } = await this.userModel
+  //     .findById(id)
+  //     .limit(limit)
+  //     .skip((page - 1) * limit)
+  //     .exec()
 
-    return new PaginatedDto(orders, page, limit, ordersCount)
+  //   const ordersCount = orders.length
+
+  //   return new PaginatedDto(orders, page, limit, ordersCount)
+  // }
+
+
+  async getOrders(id: string, page: number, limit: number) {
+    try {
+      const userWithOrders = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'orders',
+          match: { status: { $ne: 'completed' } },
+          select: '_id',
+          options: {
+            limit: limit,
+            skip: (page - 1) * limit
+          }
+        })
+        .exec()
+
+      if (!userWithOrders) {
+        throw new NotFoundException('User not Found')
+      }
+
+      // const orders = Array.isArray(userWithOrders.orders) ? userWithOrders.orders : []
+      
+      const orderIds = userWithOrders.orders.map((order: {_id: string}) => order?._id)
+      
+      const ordersCount = orderIds.length
+
+      console.log({orderIds})
+
+      return new PaginatedDto(orderIds, page, limit, ordersCount)
+    } catch (error) {
+      console.error('Error retrieving orders:', error)
+      throw new InternalServerErrorException('Failed to retrieve orders')
+    }
+    
   }
 
   async getShopping(id: string, page: number, limit: number) {
