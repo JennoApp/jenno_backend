@@ -219,8 +219,6 @@ export class UsersService {
       if (!userWithOrders) {
         throw new NotFoundException('User not Found')
       }
-
-      // const orders = Array.isArray(userWithOrders.orders) ? userWithOrders.orders : []
       
       const orderIds = userWithOrders.orders.map((order: {_id: string}) => order?._id)
       
@@ -232,9 +230,40 @@ export class UsersService {
     } catch (error) {
       console.error('Error retrieving orders:', error)
       throw new InternalServerErrorException('Failed to retrieve orders')
+    } 
+  }
+
+  async getOrdersCompleted(id: string, page: number, limit: number) {
+  try {
+    const userWithOrders = await this.userModel
+      .findById(id)
+      .populate({
+        path: 'orders',
+        match: { status: 'completed' },
+        select: '_id',
+        options: {
+          limit: limit,
+          skip: (page - 1) * limit
+        }
+      })
+      .exec();
+
+    if (!userWithOrders) {
+      throw new NotFoundException('User not Found');
     }
     
+    const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id);
+    
+    const ordersCount = orderIds.length;
+
+    console.log({ orderIds });
+
+    return new PaginatedDto(orderIds, page, limit, ordersCount);
+  } catch (error) {
+    console.error('Error retrieving completed orders:', error);
+    throw new InternalServerErrorException('Failed to retrieve completed orders');
   }
+}
 
   async getShopping(id: string, page: number, limit: number) {
     // const { shopping } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
