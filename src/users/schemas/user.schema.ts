@@ -77,6 +77,11 @@ export const UserSchema = new Schema({
     enum: ['personal', 'business'],
     required: true
   },
+  // Wallet
+  walletId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Wallet'
+  },
   createAt: {
     type: Date,
     default: Date.now

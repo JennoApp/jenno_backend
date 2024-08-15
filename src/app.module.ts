@@ -9,6 +9,7 @@ import { WebSocketModule } from './websockets/websocket.module'
 import { ChatModule } from './chat/chat.module'
 import { PaymentsModule } from './payments/payments.module'
 import { OrdersModule } from './orders/orders.module'
+import { WalletModule } from './wallet/wallet.module'
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OrdersModule } from './orders/orders.module'
     ChatModule,
     PaymentsModule,
     OrdersModule,
+    WalletModule,
     WebSocketModule
   ],
   controllers: [AppController],

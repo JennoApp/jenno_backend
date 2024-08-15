@@ -9,5 +9,6 @@ export interface User extends Document {
   following: string[],
   followers: string[],
   orders: [],
-  shopping: []
+  shopping: [],
+  walletId: string
 }

@@ -5,11 +5,14 @@ import { User } from './interfaces/User';
 import { CreateUserDto } from './dto/createuser.dto';
 import * as bcrypt from 'bcrypt';
 import { PaginatedDto } from './dto/paginated.dto';
-
+import { WalletService } from '../wallet/wallet.service'
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    readonly walletService: WalletService
+  ) { }
 
   async getUsers() {
     return await this.userModel.find();
@@ -32,7 +35,7 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      const { username, email, name, lastname, taxid, password, accountType } = user;
+      const { username, email, name, lastname, taxid, password, accountType, currency } = user;
       if (!password || password.length < 6) {
         return {
           message: 'Password must be at least 6 characters',
@@ -73,6 +76,25 @@ export class UsersService {
       }
 
       const createUser = await newUser.save();
+
+      if (accountType === 'business') {
+        console.log('Creating wallet for user...')
+        const wallet = await this.walletService.createWallet(createUser._id, {
+          totalEarned: 0,
+          availableBalance: 0,
+          pendingBalance: 0,
+          currency: currency,
+          bankAccountTokens: [],
+          transactionHistory: []
+        })
+
+        console.log('Wallet created: ', wallet)
+
+        createUser.walletId = wallet._id
+        await createUser.save()
+        console.log('User updated with wallet: ', createUser)
+      }
+
       return createUser;
     } catch (error) {
       console.log(error);
@@ -83,6 +105,10 @@ export class UsersService {
   // busca un usuario con el tipo de cuanta business
   async findOne(username: string): Promise<any | null> {
     return await this.userModel.findOne({ username, accountType: "business" })
+  }
+
+  async findById(userId: string) {
+    return await this.findById(userId)
   }
 
   // busca un usuario con el tipo de cuenta personal

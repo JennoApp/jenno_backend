@@ -7,4 +7,6 @@ export class CreateUserDto {
   taxid: string;
   password: string;
   accountType: string;
+  walletId?: string;
+  currency: string;
 }
