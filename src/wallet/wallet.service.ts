@@ -10,20 +10,14 @@ export class WalletService {
     @InjectModel('Wallet') private readonly walletModel: Model<Wallet>,
   ) {}
 
+  async getWalletById(walletId) {
+    return this.walletModel.findById(walletId)
+  }
+
   async createWallet(userId: string, data: WalletDto): Promise<Wallet> {
     if (!userId) {
       throw new NotFoundException('User not found')
     }
-
-    // const wallet = new this.walletModel({
-    //   userId: userId,
-    //   totalEarned: data.totalEarned,
-    //   availableBalance: data.availableBalance,
-    //   pendingBalance: data.pendingBalance,
-    //   currency: data.currency,
-    //   bankAccountTokens: data.bankAccountTokens,
-    //   transactionHistory: data.transactionHistory
-    // })
 
     const wallet = new this.walletModel({ ...data, userId: userId })
     return await wallet.save()
