@@ -303,6 +303,41 @@ export class UsersService {
     return new PaginatedDto(shopping, page, limit, shoppingCount)
   }
 
+  async getShoppingWithoutReview(id, page: number, limit: number) {
+    try {
+      const userWithShopping = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'shopping',
+          match: { status: 'completed'},
+          select: '_id reviews',
+          options: {
+            limit: limit,
+            skip: (page - 1) * limit
+          }
+        })
+        .exec()
+
+      if (!userWithShopping) {
+        throw new NotFoundException('User not Found')
+      }
+
+      // filtrar los productos que no tienen review del usuario
+      const shoppingWithoutReview = userWithShopping.shopping.filter((product: any) => {
+        return !product.reviews.some((review: any) => review.user.toString() === id) || product.reviews.length === 0
+      })
+
+      const shoppingCount = shoppingWithoutReview.length
+
+      console.log({ shoppingWithoutReview })
+
+      return new PaginatedDto(shoppingWithoutReview, page, limit, shoppingCount)
+    } catch (error) {
+      console.error('Error retrieving shopping without review:', error)
+      throw new InternalServerErrorException('Failed to retrieve shopping without review')
+    }
+  }
+
   async getShippingInfo(userId) {
     try {
       const shippingInfo = await this.userModel.findById(userId).select('shippingInfo')

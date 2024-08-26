@@ -12,6 +12,30 @@ const dimensionsSchema = new Schema<Dimensions>({
   height: Number
 })
 
+const reviewSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  userName: {
+    type: String,
+    require: true
+  },
+  userProfileImg: {
+    type: String,
+    required: true
+  },
+  stars: {
+    type: Number,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+})
+
 export const ProductSchema = new Schema({
   productname: String,
   imgs: [String],
@@ -40,7 +64,7 @@ export const ProductSchema = new Schema({
   },
   Tags: [String],
   score: Number,
-  reviews: [String],
+  reviews: [reviewSchema],
   discounts: [
     {
       discountType: {
