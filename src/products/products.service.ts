@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose'
 import { Product } from './interfaces/Product'
+import { ReviewData } from './interfaces/Review'
 import { ProductDto } from './dto/product.dto';
 import { PaginatedDto } from './dto/paginated.dto';
+
 
 @Injectable()
 export class ProductsService {
@@ -164,5 +166,22 @@ export class ProductsService {
       productDeleted,
       msg: 'product deleted'
     }
+  }
+
+  async addReviewToProduct(productId: string, reviewData: ReviewData) {
+    const product = await this.productModel.findById(productId).exec()
+
+    if(!product) {
+      throw new NotFoundException('Product not found')
+    }
+
+    if (!reviewData.userId || !reviewData.userName || !reviewData.userProfileImg || reviewData.stars === undefined || !reviewData.review) {
+    throw new BadRequestException('Invalid review data');
+  }
+
+    product.reviews.push(reviewData)
+    await product.save()
+
+    return product
   }
 }

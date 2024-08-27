@@ -30,6 +30,9 @@ const reviewSchema = new Schema({
     type: Number,
     required: true
   },
+  review: {
+    type: String
+  },
   date: {
     type: Date,
     default: Date.now

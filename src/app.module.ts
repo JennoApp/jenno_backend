@@ -13,7 +13,7 @@ import { WalletModule } from './wallet/wallet.module'
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1/shop-database'),
+    MongooseModule.forRoot('mongodb://127.0.0.1/eshop-database'),
     AuthModule,
     UsersModule,
     ProductsModule,

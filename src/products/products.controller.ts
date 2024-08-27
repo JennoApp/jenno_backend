@@ -133,4 +133,9 @@ export class ProductsController {
   deleteProduct(@Param('productid') productid) {
     return this.productsService.deleteProduct(productid)
   }
+
+  @Post('/review/:productid')
+  addReview(@Param('productid') productid: string, @Body() reviewData: any) {
+    return this.productsService.addReviewToProduct(productid, reviewData)
+  }
 }

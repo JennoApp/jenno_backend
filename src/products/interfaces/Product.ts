@@ -19,7 +19,7 @@ export interface Product extends Document {
   visibility: Boolean,
   Tags: [String],
   score: Number,
-  reviews: [String],
+  reviews: any[],
   discounts: [String],
   user: ObjectId,
   username: String,
