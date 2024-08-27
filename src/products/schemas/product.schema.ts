@@ -24,7 +24,6 @@ const reviewSchema = new Schema({
   },
   userProfileImg: {
     type: String,
-    required: true
   },
   stars: {
     type: Number,

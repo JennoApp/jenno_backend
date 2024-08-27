@@ -64,7 +64,7 @@ export class ProductsService {
   // return all products for single user
   async getProductsbyUser(userId: string, page: number, limit: number, country?: string) {
     const idCast = new mongoose.Types.ObjectId(userId)
-    const query: any = { 
+    const query: any = {
       user: idCast,
       visibility: true
     }
@@ -170,14 +170,15 @@ export class ProductsService {
 
   async addReviewToProduct(productId: string, reviewData: ReviewData) {
     const product = await this.productModel.findById(productId).exec()
+    console.log({ product })
 
-    if(!product) {
+    if (!product) {
       throw new NotFoundException('Product not found')
     }
 
-    if (!reviewData.userId || !reviewData.userName || !reviewData.userProfileImg || reviewData.stars === undefined || !reviewData.review) {
-    throw new BadRequestException('Invalid review data');
-  }
+    if (!reviewData.userId || !reviewData.userName || reviewData.stars === undefined || !reviewData.review) {
+      throw new BadRequestException('Invalid review data');
+    }
 
     product.reviews.push(reviewData)
     await product.save()

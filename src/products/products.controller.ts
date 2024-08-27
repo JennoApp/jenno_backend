@@ -136,6 +136,9 @@ export class ProductsController {
 
   @Post('/review/:productid')
   addReview(@Param('productid') productid: string, @Body() reviewData: any) {
-    return this.productsService.addReviewToProduct(productid, reviewData)
+    const product = this.productsService.addReviewToProduct(productid, reviewData)
+    console.log({productController: product})
+
+    return product
   }
 }

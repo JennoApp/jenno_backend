@@ -32,7 +32,11 @@ export class OrdersService {
   }
 
   async getOrder(id) {
-    return await this.orderModel.findById(id)
+    const order = await this.orderModel.findById(id)
+    if(!order) {
+      throw new NotFoundException('Order not found')
+    }
+    return order
   }
 
   async createOrder(order: OrderDto) {
