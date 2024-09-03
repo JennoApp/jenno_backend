@@ -10,6 +10,8 @@ import { ChatModule } from './chat/chat.module'
 import { PaymentsModule } from './payments/payments.module'
 import { OrdersModule } from './orders/orders.module'
 import { WalletModule } from './wallet/wallet.module'
+import { MailsModule } from './mails/mails.module'
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
   imports: [
@@ -21,7 +23,11 @@ import { WalletModule } from './wallet/wallet.module'
     PaymentsModule,
     OrdersModule,
     WalletModule,
-    WebSocketModule
+    WebSocketModule,
+    MailsModule,
+    ConfigModule.forRoot({
+      isGlobal: true
+    })
   ],
   controllers: [AppController],
   providers: [AppService],

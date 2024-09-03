@@ -5,6 +5,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { WalletService } from '../wallet/wallet.service'
 import { WalletModule } from 'src/wallet/wallet.module';
+import { MailsService } from '../mails/mails.service'
 
 
 @Module({
@@ -12,7 +13,7 @@ import { WalletModule } from 'src/wallet/wallet.module';
     { name: 'User', schema: UserSchema }
   ]), WalletModule],
   controllers: [UsersController],
-  providers: [UsersService, WalletService],
+  providers: [UsersService, WalletService, MailsService],
   exports: [UsersService]
 })
 export class UsersModule { }

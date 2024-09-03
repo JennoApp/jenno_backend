@@ -115,4 +115,11 @@ export class UsersController {
   updateShippingInfo(@Param('id') id: string, @Body() shippingInfo) {
     return this.usersService.updateShippingInfo(id, shippingInfo)
   }
+
+  @Post('/forgotpassword')
+  sendForgotPasswordEmail(@Body() body: any) {
+    const email = body.email
+    console.log(email)
+    return this.usersService.sendForgotPasswordEmail(email)
+  }
 }
