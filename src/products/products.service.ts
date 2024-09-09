@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose'
 import { Product } from './interfaces/Product'
+import { UsersService } from '../users/users.service'
 import { ReviewData } from './interfaces/Review'
 import { ProductDto } from './dto/product.dto';
 import { PaginatedDto } from './dto/paginated.dto';
@@ -10,7 +11,8 @@ import { PaginatedDto } from './dto/paginated.dto';
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectModel('Product') private productModel: Model<Product>
+    @InjectModel('Product') private productModel: Model<Product>,
+    readonly usersService: UsersService,
   ) { }
 
   // return all products in database
@@ -126,6 +128,39 @@ export class ProductsService {
 
       return products
     }
+  }
+
+  async getRandomProductsFromFollowedShops(userId: string, page: number, limit: number, country?: string) {
+    // const idCast = new mongoose.Types.ObjectId(userId)
+
+    const user = await this.usersService.findById(userId)
+      .select('following')
+      .exec()
+
+    if (!user || !user.following.length) {
+      return new PaginatedDto([], page, limit, 0)
+    }
+
+    const query: any = {
+      user: { $in: [country] }
+    }
+
+    const itemsCount = await this.productModel.countDocuments(query)
+
+    if (itemsCount === 0) {
+      return new PaginatedDto([], page, limit, 0)
+    }
+
+    const products = await this.productModel
+      .aggregate([
+        { $match: query },
+        { $sample: { size: Math.min(Number(limit), itemsCount) } },
+        { $skip: (page - 1) * Number(limit) },
+        { $limit: Number(limit) }
+      ])
+      .exec()
+
+    return new PaginatedDto(products, page, limit, itemsCount)
   }
 
   async searchProductsbyUser(username: string, query: string, page: number, limit: number) {

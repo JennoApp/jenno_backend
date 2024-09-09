@@ -118,8 +118,8 @@ export class UsersService {
     return await this.userModel.findOne({ username, accountType: "business" })
   }
 
-  async findById(userId: string) {
-    return await this.findById(userId)
+  findById(userId: string) {
+    return this.userModel.findById(userId)
   }
 
   // busca un usuario con el tipo de cuenta personal

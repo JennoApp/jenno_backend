@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -39,6 +39,11 @@ export class ProductsController {
   @Get('/user/random/:userId')
   getProductsRandombyUser(@Param('userId') userId) {
     return this.productsService.getProductsRandombyUser(userId)
+  }
+
+  @Get('randomfollowed/:userid')
+  getRandomProductsFromFollowedShops(@Param('userid') userid: string, @Query('page', ParseIntPipe) page: number = 1, @Query('limit', ParseIntPipe) limit: number = 1, @Query('country') country?: string) {
+    return this.productsService.getRandomProductsFromFollowedShops(userid, page, limit, country)
   }
 
   @Get('/searchbyuser/:username')
