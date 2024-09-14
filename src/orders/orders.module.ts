@@ -5,13 +5,33 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { OrderSchema } from './schemas/order.schema'
 import { UsersModule } from '../users/users.module'
 import { ProductsModule } from '../products/products.module'
+import { BullModule } from '@nestjs/bullmq'
+import { OrdersProcessor } from './orders.processor'
 
 @Module({
-  imports: [MongooseModule.forFeature([
+  imports: [
+    MongooseModule.forFeature([
     { name: 'Order', schema: OrderSchema }
-  ]), UsersModule, ProductsModule],
+    ]),
+    BullModule.registerQueue({
+      name: 'autoCompleteOrder',
+      connection: {
+        host: 'redis-mexo.railway.internal',
+        port: 6379
+      }
+    }),
+    // BullModule.registerQueue({
+    //   name: 'autoCompleteOrder',
+    //   connection: {
+    //     host: 'redis.railway.internal',
+    //     port: 6379
+    //   }
+    // }),
+    UsersModule, 
+    ProductsModule
+  ],
   controllers: [OrdersController],
-  providers: [ OrdersService]
+  providers: [ OrdersService, OrdersProcessor ]
 })
 
 export class OrdersModule {}

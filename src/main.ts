@@ -10,7 +10,15 @@ async function bootstrap() {
   
   app.useWebSocketAdapter(new IoAdapter(app))
 
-  await app.listen(3000);
+  app.enableCors({
+    origin: [
+      'http://localhost:5173'
+    ]
+  })
+
+  const port = process.env.PORT || 3000
+
+  await app.listen(port);
 }
 bootstrap();
 

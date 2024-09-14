@@ -12,10 +12,26 @@ import { OrdersModule } from './orders/orders.module'
 import { WalletModule } from './wallet/wallet.module'
 import { MailsModule } from './mails/mails.module'
 import { ConfigModule } from '@nestjs/config'
+import { BullModule } from '@nestjs/bullmq'
+
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://127.0.0.1/eshop-database'),
+    BullModule.forRoot({ 
+      connection: { 
+        host: 'redis-mexo.railway.internal',
+        username: 'default',
+        port: 6379, // redis port,
+        password: 'zPEOpUQWrRXtzEwJmAaCMvFuxEVXuInP',
+      },
+      defaultJobOptions: {
+        removeOnComplete: 1000,
+        removeOnFail: 5000,
+        attempts: 3
+      }
+    }),
+    
     AuthModule,
     UsersModule,
     ProductsModule,

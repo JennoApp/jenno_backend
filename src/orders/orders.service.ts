@@ -4,6 +4,8 @@ import { Model } from "mongoose";
 import Stripe from 'stripe'
 import { Order } from "./interfaces/Order";
 import { OrderDto } from "./dto/order.dto";
+import { InjectQueue } from '@nestjs/bullmq'
+import { Queue } from 'bullmq'
 
 // api key of stripe
 const stripe = new Stripe('sk_test_51OwBS403Ci0grIYp0SpTaQX8L2K7dYLMLc6OBcVFgOMfx7848THFeaVXWI2HoaVDyjKIJHivaqLfq2SGZE1HUFhU00FqyBwntr')
@@ -12,7 +14,8 @@ const stripe = new Stripe('sk_test_51OwBS403Ci0grIYp0SpTaQX8L2K7dYLMLc6OBcVFgOMf
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectModel('Order') private orderModel: Model<Order>
+    @InjectModel('Order') private orderModel: Model<Order>,
+    // @InjectQueue('autoCompleteOrder') private readonly autoCompleteOrder: Queue
   ) { }
 
   webhook(body, signature, endpointSecret) {
@@ -41,7 +44,18 @@ export class OrdersService {
 
   async createOrder(order: OrderDto) {
     const newOrder = new this.orderModel(order)
-    return await newOrder.save()
+    const savedOrder =  await newOrder.save()
+
+    // // Agregar trabajo a la cola para actualizar el estado en 2 dias
+    // await this.autoCompleteOrder.add(
+    //   'completeOrder',
+    //   { orderId: savedOrder._id },
+    //   { delay: 2 * 60 * 1000 }
+    // )
+
+    // console.log('job added to queue')
+
+    return savedOrder 
   }
 
   async getTotalRevenue(userId) {
