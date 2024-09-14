@@ -17,7 +17,7 @@ import { BullModule } from '@nestjs/bullmq'
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1/eshop-database'),
+    MongooseModule.forRoot('mongodb://mongo:uETSuXHiwYmjFfJfMRzrjwTnpYHcllvE@mongodb.railway.internal:27017/eshop-database'),
     BullModule.forRoot({ 
       connection: { 
         host: 'redis-mexo.railway.internal',
