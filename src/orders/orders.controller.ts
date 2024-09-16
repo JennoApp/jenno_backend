@@ -63,17 +63,17 @@ export class OrdersController {
       // guarda Id de Orden en usuario que vende
       const userSeller: any = await this.usersService.getUser(order?.sellerId)
       userSeller.orders = [...userSeller.orders, saveOrder._id]
-      userSeller.save()
+      await userSeller.save()
 
       // obtiene el producto y resta la cantidad de la orden
       const product: any = await this.productsService.getProduct(order.product?._id)
       product.quantity -= order.amount
-      product.save()
+      await product.save()
 
       // guarda Id de Orden en usuario que compra
       const userBuyer: any = await this.usersService.getUser(order?.buyerId)
       userBuyer.shopping = [...userBuyer.shopping, saveOrder._id]
-      userBuyer.save()
+      await userBuyer.save()
 
       return {
         msg: 'Order created',

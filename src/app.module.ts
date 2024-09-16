@@ -17,13 +17,13 @@ import { BullModule } from '@nestjs/bullmq'
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://mongo:uETSuXHiwYmjFfJfMRzrjwTnpYHcllvE@mongodb.railway.internal:27017/eshop-database'),
+    MongooseModule.forRoot('mongodb://127.0.0.1/eshop-database'),
     BullModule.forRoot({ 
       connection: { 
-        host: 'redis-mexo.railway.internal',
-        username: 'default',
+        host: 'localhost',
+        // username: 'default',
         port: 6379, // redis port,
-        password: 'zPEOpUQWrRXtzEwJmAaCMvFuxEVXuInP',
+        // password: 'zPEOpUQWrRXtzEwJmAaCMvFuxEVXuInP',
       },
       defaultJobOptions: {
         removeOnComplete: 1000,

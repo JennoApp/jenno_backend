@@ -14,9 +14,9 @@ export class OrdersProcessor extends WorkerHost {
         const { orderId } = job.data
 
         // cambiar el estado de la orden a 'completed'
+        console.log(`Processing job: ${job.name} for orderId: ${orderId}`)
         await this.orderService.updateStatus(orderId, 'completed')
-
-        console.log('completeOrder executes!')
+        console.log(`Order ${orderId} marked as completed`)
 
         return {
           sucess: true

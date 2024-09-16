@@ -15,7 +15,7 @@ const stripe = new Stripe('sk_test_51OwBS403Ci0grIYp0SpTaQX8L2K7dYLMLc6OBcVFgOMf
 export class OrdersService {
   constructor(
     @InjectModel('Order') private orderModel: Model<Order>,
-    // @InjectQueue('autoCompleteOrder') private readonly autoCompleteOrder: Queue
+    @InjectQueue('autoCompleteOrder') private readonly autoCompleteOrder: Queue
   ) { }
 
   webhook(body, signature, endpointSecret) {
@@ -46,14 +46,14 @@ export class OrdersService {
     const newOrder = new this.orderModel(order)
     const savedOrder =  await newOrder.save()
 
-    // // Agregar trabajo a la cola para actualizar el estado en 2 dias
-    // await this.autoCompleteOrder.add(
-    //   'completeOrder',
-    //   { orderId: savedOrder._id },
-    //   { delay: 2 * 60 * 1000 }
-    // )
+    // Agregar trabajo a la cola para actualizar el estado en 2 dias
+    await this.autoCompleteOrder.add(
+      'completeOrder',
+      { orderId: savedOrder._id },
+      { delay: 2 * 60 * 1000 }
+    )
 
-    // console.log('job added to queue')
+    console.log(`job added to queue for orderId: ${savedOrder._id}`)
 
     return savedOrder 
   }

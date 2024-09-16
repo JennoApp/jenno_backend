@@ -16,7 +16,7 @@ import { OrdersProcessor } from './orders.processor'
     BullModule.registerQueue({
       name: 'autoCompleteOrder',
       connection: {
-        host: 'redis-mexo.railway.internal',
+        // host: 'redis-mexo.railway.internal',
         port: 6379
       }
     }),
