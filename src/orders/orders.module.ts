@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module'
 import { ProductsModule } from '../products/products.module'
 import { BullModule } from '@nestjs/bullmq'
 import { OrdersProcessor } from './orders.processor'
+import { WalletModule } from '../wallet/wallet.module'
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { OrdersProcessor } from './orders.processor'
     //   }
     // }),
     UsersModule, 
-    ProductsModule
+    ProductsModule,
+    WalletModule
   ],
   controllers: [OrdersController],
   providers: [ OrdersService, OrdersProcessor ]

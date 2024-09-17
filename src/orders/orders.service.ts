@@ -6,6 +6,7 @@ import { Order } from "./interfaces/Order";
 import { OrderDto } from "./dto/order.dto";
 import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
+import { WalletService } from "../wallet/wallet.service";
 
 // api key of stripe
 const stripe = new Stripe('sk_test_51OwBS403Ci0grIYp0SpTaQX8L2K7dYLMLc6OBcVFgOMfx7848THFeaVXWI2HoaVDyjKIJHivaqLfq2SGZE1HUFhU00FqyBwntr')
@@ -15,7 +16,8 @@ const stripe = new Stripe('sk_test_51OwBS403Ci0grIYp0SpTaQX8L2K7dYLMLc6OBcVFgOMf
 export class OrdersService {
   constructor(
     @InjectModel('Order') private orderModel: Model<Order>,
-    @InjectQueue('autoCompleteOrder') private readonly autoCompleteOrder: Queue
+    @InjectQueue('autoCompleteOrder') private readonly autoCompleteOrder: Queue,
+    private readonly walletService: WalletService
   ) { }
 
   webhook(body, signature, endpointSecret) {
@@ -45,6 +47,9 @@ export class OrdersService {
   async createOrder(order: OrderDto) {
     const newOrder = new this.orderModel(order)
     const savedOrder =  await newOrder.save()
+
+    //
+    await this.walletService.updatePendingBalance(order.sellerId, order.amount)
 
     // Agregar trabajo a la cola para actualizar el estado en 2 dias
     await this.autoCompleteOrder.add(
