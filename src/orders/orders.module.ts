@@ -30,10 +30,11 @@ import { WalletModule } from '../wallet/wallet.module'
     // }),
     UsersModule, 
     ProductsModule,
-    WalletModule
+    WalletModule,
   ],
   controllers: [OrdersController],
-  providers: [ OrdersService, OrdersProcessor ]
+  providers: [ OrdersService, OrdersProcessor ],
+  exports: [ OrdersService ]
 })
 
 export class OrdersModule {}

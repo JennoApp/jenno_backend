@@ -8,7 +8,7 @@ import { WalletDto } from './dto/wallet.dto'
 export class WalletService {
   constructor(
     @InjectModel('Wallet') private readonly walletModel: Model<Wallet>,
-  ) {}
+  ) { }
 
   async getWalletById(walletId) {
     return this.walletModel.findById(walletId)
@@ -23,18 +23,47 @@ export class WalletService {
     return await wallet.save()
   }
 
-  async updatePendingBalance(userId: string, amount: number) {
+  async updatePendingBalance(userId: string, balance: number) {
+    try {
+    
     const wallet = await this.walletModel.findOne({ userId })
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`)
     }
 
-    // Aplicar el 10% de comision y sumar el 90% al pendingBalance
-    const netAmount = amount * 0.9
-
-    wallet.pendingBalance += netAmount
+    wallet.pendingBalance += balance
     await wallet.save()
 
-    console.log(`Update pending balance for userId: ${userId} with net amoun: ${netAmount}`)
+    console.log(`Update pending balance for userId: ${userId} with netbalance: ${balance}`)
+  } catch (error) {
+    // Manejo de errores
+    console.error(`Error updating pending balance for userId: ${userId}: ${error.message}`);
+    throw new Error(`Failed to update pending balance for userId: ${userId}`);
+  }
+}
+  async updateAvailableAndTotalEarned(order) {
+    try {
+      const wallet = await this.walletModel.findOne({ userId: order?.sellerId })
+      if (!wallet) {
+        throw new NotFoundException(`Wallet not found for userId: ${order?.sellerId}`)
+      }
+      // Calcula el total del precio del producto sin comision
+      const productTotal = order?.product?.price * order?.amount
+      const totalAfterComission = productTotal * 0.9
+
+      // Calcular el costo total de envio
+      const totalShipping = order?.product?.shippingfee * order?.amount
+
+      const balance = totalAfterComission + totalShipping
+
+      wallet.pendingBalance -= balance
+      wallet.availableBalance += balance
+      wallet.totalEarned += balance
+      await wallet.save()
+
+      console.log(`Updated Available and total Earned`)
+    } catch (error) {
+      throw new Error(`Error updating wallet for userId: ${order?.sellerId}: ${error.message}`);
+    }
   }
 }
