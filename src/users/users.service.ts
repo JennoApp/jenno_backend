@@ -399,4 +399,26 @@ export class UsersService {
       throw new Error('No se pudo enviar el correo de recuperación de contraseña')
     }
   }
+
+  // update Paypal Account
+  async updatePaypalAccount(userId: string, updatePayplaDto: { paypalAccount: string }) {
+    const user = await this.userModel.findById(userId)
+    if(!user) {
+      throw new NotFoundException('Usuario no encontrado')
+    }
+
+    user.paypalAccount = updatePayplaDto.paypalAccount
+    return user.save()
+  }
+
+  async getPaypalAccount(userId: string) {
+    const user = await this.userModel.findById(userId)
+    if(!user) {
+      throw new NotFoundException('Usuario no encontrado')
+    }
+
+    return {
+      account: user.paypalAccount
+    }
+  }
 }

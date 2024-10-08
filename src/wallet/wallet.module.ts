@@ -3,6 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { WalletSchema } from './schema/wallet.schema'
 import { WalletControler } from './wallet.controller'
 import { WalletService } from './wallet.service'
+import { PaypalService } from './paypal.service'
+
 
 @Module({
   imports: [
@@ -11,7 +13,7 @@ import { WalletService } from './wallet.service'
     ]),
   ],
   controllers: [WalletControler],
-  providers: [WalletService],
+  providers: [WalletService, PaypalService],
   exports: [WalletService, MongooseModule]
 })
 export class WalletModule { }

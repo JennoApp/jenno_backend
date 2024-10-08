@@ -82,6 +82,11 @@ export const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Wallet'
   },
+  paypalAccount: {
+    type: String,
+    required: false
+  },
+  paypalWithdrawals: [],
   createAt: {
     type: Date,
     default: Date.now
