@@ -8,9 +8,9 @@ export class PaypalService {
   private apiUrl: string
 
   constructor() {
-    this.clientId = ""
-    this.clientSecret = ""
-    this.apiUrl = ""
+    this.clientId = "AQc0Px63WS02JpsJp3hmK6SV4tYsMgRNc-tUBz6ypAoOq_T8AO27wZTNHNsykRkcMhfmOqVNhtTCE9XR"
+    this.clientSecret = "EO2xhEJEBGxTUdAkA1Jkkvz5Obbg2lP5S6gZi31F_hJGLtfbUmJAOGRv-tnRayu406kBNWz66WxzOMt9"
+    this.apiUrl = "https://api-m.sandbox.paypal.com"
   }
 
   // Funcion para obtener el token de acceso

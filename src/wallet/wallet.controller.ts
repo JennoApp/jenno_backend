@@ -27,8 +27,13 @@ export class WalletControler {
     const user = req.user
     const amount = body.amount
 
+    const userId = user.userId
+    if (!user || !userId) {
+      throw new HttpException('User not authenticated', 401)
+    }
+
     // verificar si el usuario tiene suficiente balance para retirar
-    const balance = await this.walletService.getBalance(user._id)
+    const balance = await this.walletService.getBalance(userId)
     if (balance < amount) {
       throw new HttpException('No tienes suficiente balance para retirar esta cantidad', 400)
     }
@@ -37,8 +42,8 @@ export class WalletControler {
     const payoutResult = await this.paypalService.createPayout(paypalAccount, amount)
 
     // Actualiza el historial de retiros y reduce el balance del usuario
-    await this.walletService.updateWithdrawlHistory(user._id, amount)
-    await this.walletService.reduceBalance(user._id, amount)
+    await this.walletService.updateWithdrawlHistory(userId, amount)
+    await this.walletService.reduceBalance(userId, amount)
 
     return {
       message: 'Retiro realizado exitosamente',
