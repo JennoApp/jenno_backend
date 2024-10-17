@@ -78,7 +78,7 @@ export class WalletService {
     return wallet.availableBalance
   }
 
-  async updateWithdrawlHistory(userId: string, amount: number) {
+  async updateWithdrawlHistory(userId: string, amount: number, amountUsd: number) {
     const wallet = await this.walletModel.findOne({ userId })
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`)
@@ -86,6 +86,7 @@ export class WalletService {
 
     const withdrawalEntry = {
       amount: amount,
+      amountUsd: amountUsd,
       date: new Date(),
       type: 'withdrawal',
       status: 'completed'
@@ -94,7 +95,7 @@ export class WalletService {
     wallet.transactionHistory.push(withdrawalEntry)
     await wallet.save()
 
-    console.log(`Updated withdrawal history for userId: ${userId} with amount: ${amount}`)
+    console.log(`Updated withdrawal history for userId: ${userId} with amount: ${amount} COP and ${amountUsd} USD`)
   }
 
   async reduceBalance(userId: string, amount: number): Promise<void> {

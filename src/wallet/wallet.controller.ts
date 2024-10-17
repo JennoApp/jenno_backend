@@ -23,9 +23,10 @@ export class WalletControler {
 
   @UseGuards(JwtAuthGuard)
   @Post('withdraw/:paypalAccount')
-  async withdrawFunds(@Param('paypalAccount') paypalAccount,@Req() req, @Body() body: { amount: number }) {
+  async withdrawFunds(@Param('paypalAccount') paypalAccount,@Req() req, @Body() body: { amount: number, amountUsd: number }) {
     const user = req.user
-    const amount = body.amount
+    const amount = body.amount        // monto en pesos colombianos
+    const amountUsd = body.amountUsd  // monto en dolares
 
     const userId = user.userId
     if (!user || !userId) {
@@ -38,12 +39,12 @@ export class WalletControler {
       throw new HttpException('No tienes suficiente balance para retirar esta cantidad', 400)
     }
 
-    // Realiza el payout utilizando el PaypalService
-    const payoutResult = await this.paypalService.createPayout(paypalAccount, amount)
+    // Realiza el payout utilizando el PaypalService en USD
+    const payoutResult = await this.paypalService.createPayout(paypalAccount, amountUsd)
 
     // Actualiza el historial de retiros y reduce el balance del usuario
-    await this.walletService.updateWithdrawlHistory(userId, amount)
-    await this.walletService.reduceBalance(userId, amount)
+    await this.walletService.updateWithdrawlHistory(userId, amount, amountUsd)
+    await this.walletService.reduceBalance(userId, amount) // Reducir en pesos colombianos
 
     return {
       message: 'Retiro realizado exitosamente',

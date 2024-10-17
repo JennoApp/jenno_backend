@@ -130,6 +130,10 @@ export class UsersController {
 
   @Get('getpaypal/:userid')
   getPaypalAccount(@Param('userid') userid: string) {
+    if (!userid) {
+      throw new Error('El Id de usuario es requerido')
+    }
+
     return this.usersService.getPaypalAccount(userid)
   }
 }

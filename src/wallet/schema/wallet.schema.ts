@@ -29,6 +29,10 @@ export const WalletSchema = new Schema({
         type: Number,
         require: true
       },
+      amountUsd: {
+        type: Number,
+        require: true
+      },
       date: {
         type: Date,
         default: Date.now

@@ -412,7 +412,11 @@ export class UsersService {
   }
 
   async getPaypalAccount(userId: string) {
-    const user = await this.userModel.findById(userId)
+    if (!userId) {
+      throw new Error('El Id de usuario es requerido')
+    }
+    
+    const user = await this.userModel.findById(userId).exec()
     if(!user) {
       throw new NotFoundException('Usuario no encontrado')
     }
