@@ -411,7 +411,7 @@ export class UsersService {
     return user.save()
   }
 
-  async getPaypalAccount(userId: string) {
+  async getPaypalAccount(userId: any) {
     if (!userId) {
       throw new Error('El Id de usuario es requerido')
     }

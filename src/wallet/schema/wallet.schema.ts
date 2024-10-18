@@ -46,5 +46,13 @@ export const WalletSchema = new Schema({
         default: 'pending'
       }
     }
+  ],
+  withdrawals: [
+    {
+      payoutBatchId: {
+        type: String,
+        require: true
+      }
+    }
   ]
 })

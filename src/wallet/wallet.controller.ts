@@ -21,6 +21,16 @@ export class WalletControler {
     return  this.walletService.createWallet(userid, wallet)
   }
 
+  @Get('getwithdrawals/:walletId')
+  getWithdrawalbyId(@Param('walletId') walletId) {
+    return this.walletService.getWithdrawalbyId(walletId)
+  }
+
+  @Get('getPaypalPayoutDetails/:batchId')
+  getPaypalPayoutDetails(@Param('batchId') batchId) {
+    return this.paypalService.getPaypalDetails(batchId)
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('withdraw/:paypalAccount')
   async withdrawFunds(@Param('paypalAccount') paypalAccount,@Req() req, @Body() body: { amount: number, amountUsd: number }) {
@@ -43,7 +53,7 @@ export class WalletControler {
     const payoutResult = await this.paypalService.createPayout(paypalAccount, amountUsd)
 
     // Actualiza el historial de retiros y reduce el balance del usuario
-    await this.walletService.updateWithdrawlHistory(userId, amount, amountUsd)
+    await this.walletService.updateWithdrawlHistory(userId, amount, amountUsd, payoutResult?.batch_header?.payout_batch_id)
     await this.walletService.reduceBalance(userId, amount) // Reducir en pesos colombianos
 
     return {

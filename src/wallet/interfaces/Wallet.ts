@@ -13,4 +13,7 @@ export interface Wallet extends Document {
     type: string; // Puede ser 'deposit', 'withdrawal', 'transfer', etc.
     status: string; // Puede ser 'completed', 'pending', 'failed', etc.
   }[];
+  withdrawals: {
+    payoutBatchId: string
+  }[];
 }

@@ -3,7 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Wallet } from './interfaces/Wallet'
 import { WalletDto } from './dto/wallet.dto'
-import { } from '@paypal/paypal-js'
+
 
 @Injectable()
 export class WalletService {
@@ -12,7 +12,13 @@ export class WalletService {
   ) { }
 
   async getWalletById(walletId) {
-    return this.walletModel.findById(walletId)
+    return await this.walletModel.findById(walletId)
+  }
+
+  async getWithdrawalbyId(walletId) {
+    const wallet = await this.walletModel.findById(walletId)
+
+    return wallet.withdrawals
   }
 
   async createWallet(userId: string, data: WalletDto): Promise<Wallet> {
@@ -78,7 +84,7 @@ export class WalletService {
     return wallet.availableBalance
   }
 
-  async updateWithdrawlHistory(userId: string, amount: number, amountUsd: number) {
+  async updateWithdrawlHistory(userId: string, amount: number, amountUsd: number, payoutBatchId: string) {
     const wallet = await this.walletModel.findOne({ userId })
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`)
@@ -93,6 +99,7 @@ export class WalletService {
     }
 
     wallet.transactionHistory.push(withdrawalEntry)
+    wallet.withdrawals.unshift({payoutBatchId})
     await wallet.save()
 
     console.log(`Updated withdrawal history for userId: ${userId} with amount: ${amount} COP and ${amountUsd} USD`)

@@ -74,4 +74,24 @@ export class PaypalService {
 
     return data
   }
+
+  async getPaypalDetails(batchId) {
+    const accessToken = await this.getPaypalAccessToken()
+
+    const response = await fetch(`${this.apiUrl}/v1/payments/payouts/${batchId}?page=1&page_size=5&total_required=true`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      throw new HttpException(data, response.status)
+    }
+
+    return data
+  }
 }
