@@ -411,12 +411,24 @@ export class UsersService {
     return user.save()
   }
 
+  // remove Paypal Account
+  async removePaypalAccount(userId: string) {
+    const user = await this.userModel.findById(userId)
+
+    if(!user) {
+      throw new NotFoundException('Usuario no encontrado')
+    }
+
+    user.paypalAccount = null
+    return user.save()
+  }
+
   async getPaypalAccount(userId: any) {
     if (!userId) {
       throw new Error('El Id de usuario es requerido')
     }
     
-    const user = await this.userModel.findById(userId).exec()
+    const user = await this.userModel.findById(userId)
     if(!user) {
       throw new NotFoundException('Usuario no encontrado')
     }

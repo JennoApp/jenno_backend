@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -124,8 +124,13 @@ export class UsersController {
   }
 
   @Patch('paypalaccount/:userid')
-  updatePaypalAccount(@Param('userid') userid: string, @Body() updatePayplaDto: { paypalAccount }) {
+  updatePaypalAccount(@Param('userid') userid: string, @Body() updatePayplaDto: { paypalAccount: string }) {
     return this.usersService.updatePaypalAccount(userid, updatePayplaDto)
+  }
+
+  @Delete('removepaypalaccount/:userid')
+  removePaypalAccount(@Param('userid') userid: string) {
+    return this.usersService.removePaypalAccount(userid)
   }
 
   @Get('getpaypal/:userid')
