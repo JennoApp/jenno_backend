@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './interfaces/User';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { PaginatedDto } from './dto/paginated.dto';
 import { WalletService } from '../wallet/wallet.service'
 import { MailsService } from '../mails/mails.service'
+import { AwsService } from 'src/aws/aws.service';
 // import brevo from '@getbrevo/brevo'
 
 // const apiInstance = new brevo.TransactionalEmailsApi()
@@ -22,6 +23,7 @@ export class UsersService {
     @InjectModel('User') private readonly userModel: Model<User>,
     readonly walletService: WalletService,
     readonly mailsService: MailsService,
+    private awsService: AwsService
     // apiInstance = new brevo.TransactionalEmailsApi()
   ) { }
 
@@ -131,12 +133,48 @@ export class UsersService {
     return await this.userModel.findOne({ email }).exec()
   }
 
-  async updateUserImg(userId: string, newProfileImg: string): Promise<any | null> {
+  async updateUserImg(userId: string, newProfileImgUrl: string): Promise<any | null> {
     try {
-      const updatedUser = await this.userModel.findByIdAndUpdate(userId, { profileImg: newProfileImg }, { new: true })
+      // Validar que los parámetros no estén vacíos
+      if (!userId || !newProfileImgUrl) {
+        throw new BadRequestException('UserId y newProfileImgUrl son requeridos');
+      }
 
-      return updatedUser
+      // Buscar el usuario
+      const user = await this.userModel.findById(userId)
+      if (!user) {
+        throw new NotFoundException('Usuario no encontrado')
+      }
+
+      try {
+        // Si el usuario tiene una imagen previa, eliminarla de AWS S3
+        if (user.profileImg) {
+          await this.awsService.deleteFileFromS3(user.profileImg);
+        }
+      } catch (deleteError) {
+        // Log del error pero continuamos con la actualización
+        console.error('Error al eliminar imagen anterior:', deleteError);
+        // Opcionalmente, podrías querer manejar este error de otra manera
+      }
+
+      // // Si el usuario tiene una imagen previa eliminarla de Aws S3
+      // if (user.profileImg) {
+      //   await this.awsService.deleteFileFromS3(user.profileImg)
+      // }
+
+      // Actualizar la Url de la imagen de perfil
+      user.profileImg = newProfileImgUrl
+
+      // return user.save()
+
+      // Guardar y retornar el usuario actualizado
+      const updatedUser = await user.save();
+      return updatedUser;
     } catch (error) {
+      console.error('Error en updateUserImg:', error);
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error; // Re-lanzar errores específicos
+      }
       throw new Error("Error al actualizar la image de perfil del usuario")
     }
   }
@@ -355,7 +393,7 @@ export class UsersService {
 
       // filtrar los productos que no tienen review del usuario
       const shoppingWithoutReview = userWithShopping.shopping.filter((product: any) => {
-        return !product.reviews || product.reviews.length === 0 ||   !product.reviews.some((review: any) => review.user.toString() === id)
+        return !product.reviews || product.reviews.length === 0 || !product.reviews.some((review: any) => review.user.toString() === id)
       })
 
       const shoppingCount = shoppingWithoutReview.length
@@ -386,10 +424,10 @@ export class UsersService {
   async sendForgotPasswordEmail(email) {
     try {
       const user = await this.findOneByEmail(email)
-      if(!user) {
+      if (!user) {
         throw new Error('Usuario no encontrado')
       }
-      console.log({user})
+      console.log({ user })
 
       await this.mailsService.sendPasswordReset(user)
 
@@ -403,7 +441,7 @@ export class UsersService {
   // update Paypal Account
   async updatePaypalAccount(userId: string, updatePayplaDto: { paypalAccount: string }) {
     const user = await this.userModel.findById(userId)
-    if(!user) {
+    if (!user) {
       throw new NotFoundException('Usuario no encontrado')
     }
 
@@ -415,7 +453,7 @@ export class UsersService {
   async removePaypalAccount(userId: string) {
     const user = await this.userModel.findById(userId)
 
-    if(!user) {
+    if (!user) {
       throw new NotFoundException('Usuario no encontrado')
     }
 
@@ -427,9 +465,9 @@ export class UsersService {
     if (!userId) {
       throw new Error('El Id de usuario es requerido')
     }
-    
+
     const user = await this.userModel.findById(userId)
-    if(!user) {
+    if (!user) {
       throw new NotFoundException('Usuario no encontrado')
     }
 

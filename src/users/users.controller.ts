@@ -1,10 +1,18 @@
-import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Express } from 'express'
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AwsService } from 'src/aws/aws.service';
+
+
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(
+    private usersService: UsersService,
+    private awsService: AwsService
+  ) { }
 
   @Get()
   getUsers() {
@@ -73,11 +81,17 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/updateProfileImg')
-  async updateProfileImg(@Body() imgUrl, @Request() req) {
+  @UseInterceptors(FileInterceptor('file'))
+  async updateProfileImg(@UploadedFile() file: Express.Multer.File, @Request() req) {
     console.log(req.user)
+    console.log(file)
     //console.log({imgUrl}) 
     try {
-      const updatedUser = await this.usersService.updateUserImg(req?.user?.userId, imgUrl?.profileImg)
+      // Subir la imagen a Aws S3
+      const { publicUrl } = await this.awsService.uploadFile(file, 'profile')
+
+      // Actuializar la imagen de perfil
+      const updatedUser = await this.usersService.updateUserImg(req?.user?.userId, publicUrl)
       if (!updatedUser) {
         throw new NotFoundException(`Usuario con ID ${req?.user?.userId} no encontrado.`);
       }
@@ -93,15 +107,13 @@ export class UsersController {
         message: "Error al actualizar la imagen de perfil",
         status: HttpStatus.INTERNAL_SERVER_ERROR
       }
-    }
-    
+    } 
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('/updateuser')
   updateUser(@Body() user, @Request() req) {
     return this.usersService.updateUser(req?.user?.userId, user)
-
   }
 
   
