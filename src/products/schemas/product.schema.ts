@@ -40,7 +40,10 @@ const reviewSchema = new Schema({
 
 export const ProductSchema = new Schema({
   productname: String,
-  imgs: [String],
+  imgs: {
+    type: [String],
+    default: []
+  },
   price: Number,
   quantity: Number,
   location: String,
@@ -98,7 +101,10 @@ export const ProductSchema = new Schema({
   },
   username: String,
   userProfileImg: String,
-  country: [String], 
+  country: {
+    type: [String],
+    default: []
+  }, 
 }, {
   timestamps: true
 })

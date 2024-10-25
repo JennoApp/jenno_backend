@@ -1,14 +1,17 @@
-import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UsersService } from 'src/users/users.service';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AwsService } from 'src/aws/aws.service';
 
 @Controller('products')
 export class ProductsController {
   constructor(
     private productsService: ProductsService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private awsService: AwsService
   ) { }
 
   @Get()
@@ -54,7 +57,11 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createProduct(@Request() req, @Body() product: ProductDto) {
-    if (product.productId && (product.productId !== null || product.productId !== undefined) ) {
+    // verificar que el producto exista
+    const productData = await this.productsService.getProduct(product.productId)
+
+
+    if (product.productId && (product.productId !== null || product.productId !== undefined)) {
       // Actualizar producto
       const updateProduct = {
         productId: product.productId,
@@ -72,14 +79,15 @@ export class ProductsController {
           length: product.dimensions.length,
           width: product.dimensions.width,
           height: product.dimensions.height,
-        }, 
+        },
         /// 
         status: product.status,
         user: req.user.userId,
         username: req.user.username,
-        country: product.country && Array.isArray(product.country) && product.country.length > 0
-          ? product.country
-          : [req.user.country],
+        country: Array.isArray(product.country) && product.country.length > 0
+          ? this.productsService.ensureUniqueCountries(productData?.country, product.country)
+          : this.productsService.ensureUniqueCountries(productData?.country, [req.user.country]),
+
         ///
         options: product.options,
         especifications: product.especifications
@@ -116,6 +124,9 @@ export class ProductsController {
         country: product.country && Array.isArray(product.country) && product.country.length > 0
           ? product.country
           : [req.user.country],
+        // country: Array.isArray(product.country) && product.country.length > 0
+        //   ? this.productsService.ensureUniqueCountries(productData?.country, product.country)
+        //   : this.productsService.ensureUniqueCountries(productData?.country, [req.user.country]),
         ///
         options: product.options,
         especifications: product.especifications
@@ -134,6 +145,73 @@ export class ProductsController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('upload-images/:productId')
+  @UseInterceptors(AnyFilesInterceptor())
+  async uploadProductImages(
+    @Request() req,
+    @Param('productId') productId: string,
+    @UploadedFiles() files: Array<Express.Multer.File>
+  ) {
+    try {
+      const userId = req.user.userId
+
+      // verificar que el producto exista
+      const product = await this.productsService.getProduct(productId)
+      if (!product) {
+        throw new NotFoundException('Producto no encontrado')
+      }
+
+      // verificar que el producto pertenezca al usuario
+      if (product.user.toString() !== userId) {
+        throw new NotFoundException('No tienes permiso para modificar este producto')
+      }
+
+      // solo eliminar imagenes antiguas si se han subido nuevas
+      if (files && files.length > 0) {
+        // Si el producto tiene imágenes existentes, eliminarlas de S3
+        try {
+          if (product.imgs && product.imgs.length > 0) {
+            await Promise.all(
+              product.imgs.map(imageUrl =>
+                this.awsService.deleteFileFromS3(imageUrl)
+              )
+            );
+          }
+        } catch (deleteError) {
+          console.error('Error al eliminar imágenes antiguas:', deleteError);
+          throw new Error('Error al eliminar las imágenes antiguas');
+        }
+
+        // Subir las nuevas imágenes una por una
+        const uploadPromises = files.map(async (file) => {
+          const { publicUrl } = await this.awsService.uploadFile(file, 'product');
+          return publicUrl;
+        });
+
+        // Esperar a que todas las imágenes se suban
+        const uploadedImageUrls = await Promise.all(uploadPromises);
+
+        // Actualizar el producto con las nuevas Urls
+        product.imgs = uploadedImageUrls
+
+      }
+
+
+      await product.save()
+
+      return {
+        success: true,
+        message: 'Imagenes actualizadas exitosamente',
+        images: product.imgs
+      }
+
+    } catch (error) {
+      console.error('Error en uploadProductImages:', error);
+      throw error;
+    }
+  }
+
   @Delete(':productid')
   deleteProduct(@Param('productid') productid) {
     return this.productsService.deleteProduct(productid)
@@ -142,7 +220,7 @@ export class ProductsController {
   @Post('/review/:productid')
   addReview(@Param('productid') productid: string, @Body() reviewData: any) {
     const product = this.productsService.addReviewToProduct(productid, reviewData)
-    console.log({productController: product})
+    console.log({ productController: product })
 
     return product
   }

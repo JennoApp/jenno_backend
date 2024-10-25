@@ -2,7 +2,7 @@ import { Document, ObjectId } from 'mongoose'
 
 export interface Product extends Document {
   productname: String,
-  imgs: [String],
+  imgs: string[],
   price: Number,
   quantity: Number,
   location: String,
@@ -17,6 +17,7 @@ export interface Product extends Document {
   dimensions: String,
   status: [String],
   visibility: Boolean,
+  country: string[]
   Tags: [String],
   score: Number,
   reviews: any[],

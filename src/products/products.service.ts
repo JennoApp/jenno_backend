@@ -6,13 +6,14 @@ import { UsersService } from '../users/users.service'
 import { ReviewData } from './interfaces/Review'
 import { ProductDto } from './dto/product.dto';
 import { PaginatedDto } from './dto/paginated.dto';
-
+import { AwsService } from '../aws/aws.service'
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectModel('Product') private productModel: Model<Product>,
     readonly usersService: UsersService,
+    private awsService: AwsService
   ) { }
 
   // return all products in database
@@ -219,5 +220,16 @@ export class ProductsService {
     await product.save()
 
     return product
+  }
+
+  ensureUniqueCountries(existingCountries: string[], newCountries: string[]) {
+    const combinedCountries = [...existingCountries]
+    newCountries.forEach(country => {
+      if(!combinedCountries.includes(country)) {
+        combinedCountries.push(country)
+      }
+    })
+
+    return combinedCountries
   }
 }
