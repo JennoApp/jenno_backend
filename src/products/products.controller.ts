@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException, BadRequestException } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -15,8 +15,13 @@ export class ProductsController {
   ) { }
 
   @Get()
-  getProducts(@Query('page') page: number, @Query('limit') limit: number, @Query('country') country: string) {
-    return this.productsService.getProducts(page, limit, country)
+  getProducts(
+    @Query('page') page: number,
+    @Query('limit') limit: number, 
+    @Query('country') country: string,
+    @Query('category') category: string
+  ) {
+    return this.productsService.getProducts(page, limit, country, category)
   }
 
   @Get('/search')
@@ -52,6 +57,17 @@ export class ProductsController {
   @Get('/searchbyuser/:username')
   getSearchProductsbyUser(@Param('username') username, @Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
     return this.productsService.searchProductsbyUser(username, query, page, limit)
+  }
+
+  @Get('/categories/random')
+  getRandomCategories(@Query('limit') limit?: string) {
+    const numLimit = limit ? parseInt(limit, 10) : 10
+    
+    if (isNaN(numLimit) || numLimit <= 0) {
+      throw new BadRequestException('El limite debe ser un numero positivo.')
+    }
+
+    return this.productsService.getRandomCategories(numLimit)
   }
 
   @UseGuards(JwtAuthGuard)

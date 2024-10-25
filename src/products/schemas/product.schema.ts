@@ -52,7 +52,10 @@ export const ProductSchema = new Schema({
   requirements: String,
   policies: String,
   description: String,
-  category: String,
+  category: {
+    type: String,
+    required: true
+  },
   shippingfee: Number,
   weight: Number,
   dimensions: {

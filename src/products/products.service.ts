@@ -17,13 +17,18 @@ export class ProductsService {
   ) { }
 
   // return all products in database
-  async getProducts(page: number, limit: number, country?: string) {
+  async getProducts(page: number, limit: number, country?: string, category?: string) {
     const query: any = {
       visibility: true
     }
 
     if (country) {
       query.country = { $in: [country] }
+    }
+
+    // Añadir filtro por categoría si existe
+    if (category) {
+      query.category = category;
     }
 
     const itemsCount = await this.productModel.countDocuments(query)
@@ -164,6 +169,20 @@ export class ProductsService {
     return new PaginatedDto(products, page, limit, itemsCount)
   }
 
+
+  async getRandomCategories(limit: number) {
+    try {
+      return await this.productModel.aggregate([
+        { $match: { category: { $exists: true, $ne: null } } },
+        { $sample: { size: limit } },
+        { $project: { _id: 0, category: "$category" } }
+      ]).exec();
+    } catch (error) {
+      throw new BadRequestException(`Error al obtener categorías: ${error.message}`);
+    }
+  }
+
+
   async searchProductsbyUser(username: string, query: string, page: number, limit: number) {
     if (query.trim() === "") {
       return new PaginatedDto([], page, limit, 0)
@@ -225,7 +244,7 @@ export class ProductsService {
   ensureUniqueCountries(existingCountries: string[], newCountries: string[]) {
     const combinedCountries = [...existingCountries]
     newCountries.forEach(country => {
-      if(!combinedCountries.includes(country)) {
+      if (!combinedCountries.includes(country)) {
         combinedCountries.push(country)
       }
     })
