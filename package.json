@@ -1,5 +1,6 @@
 {
- "version": "0.0.1",
+ "version": "0.5.0",
+ "name": "jenno_backend",
  "description": "",
  "author": "",
  "private": true,
