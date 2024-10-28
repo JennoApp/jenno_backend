@@ -263,23 +263,10 @@ export class UsersService {
     }
   }
 
-  // async getOrders(id: string, page: number, limit: number) {
-  //   const { orders } = await this.userModel
-  //     .findById(id)
-  //     .limit(limit)
-  //     .skip((page - 1) * limit)
-  //     .exec()
-
-  //   const ordersCount = orders.length
-
-  //   return new PaginatedDto(orders, page, limit, ordersCount)
-  // }
-
-
-  async getOrders(id: string, page: number, limit: number) {
+  async getOrders(userId: string, page: number, limit: number) {
     try {
       const userWithOrders = await this.userModel
-        .findById(id)
+        .findById(userId)
         .populate({
           path: 'orders',
           match: { status: { $ne: 'completed' } },

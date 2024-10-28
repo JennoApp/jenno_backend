@@ -29,9 +29,9 @@ export class UsersController {
     return this.usersService.getFollowers(id, page, limit)
   }
 
-  @Get('/orders/:id')
-  getOrders(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
-    return this.usersService.getOrders(id, page, limit)
+  @Get('/orders/:userid')
+  getOrders(@Param('userid') userid, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.usersService.getOrders(userid, page, limit)
   }
 
   @Get('/orderscompleted/:id')
