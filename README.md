@@ -9,10 +9,7 @@
   <p align="center">
 
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-c
 ## Installation
 
 ```bash
@@ -32,14 +29,11 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-
-
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Author - [crb331](https://github.com/crb331)
+- Website - [https://jenno.com.co](https://jenno.com.co/)
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+Jenno is [MIT licensed](LICENSE).
