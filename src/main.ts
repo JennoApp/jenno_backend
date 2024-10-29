@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io'
+import { ConfigService } from '@nestjs/config'
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,9 +18,11 @@ async function bootstrap() {
     ]
   })
 
-  const port = process.env.PORT || 3000
+  const configService = app.get(ConfigService)
+  const port = configService.get('APP_PORT')
 
   await app.listen(port);
+  console.log(`This application is running on: ${await app.getUrl()}`)
 }
 bootstrap();
 

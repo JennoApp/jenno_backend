@@ -6,23 +6,22 @@ import { v4 as uuidv4 } from 'uuid'
 @Injectable()
 export class AwsService {
   private client: S3Client
-  private bucketName = this.configService.get("AWS_BUCKET_NAME")
-  private s3Region = this.configService.get("AWS_BUCKET_REGION")
+  private bucketName: string
+  private s3Region: string
 
-  constructor(
-    private readonly configService: ConfigService,
-  ) {
-    const s3_region = this.configService.get("AWS_BUCKET_REGION")
+  constructor(private readonly configService: ConfigService) {
+    this.bucketName = this.configService.get<string>('AWS_BUCKET_NAME')
+    this.s3Region = this.configService.get<string>('AWS_BUCKET_REGION')
 
-    if (!s3_region) {
+    if (!this.s3Region) {
       throw new Error('S3_Region not found in environment variables')
     }
 
     this.client = new S3Client({
-      region: s3_region,
+      region: this.s3Region,
       credentials: {
-        accessKeyId: this.configService.get("AWS_PUBLIC_KEY"),
-        secretAccessKey: this.configService.get("AWS_SECRET_KEY")
+        accessKeyId: this.configService.get<string>('AWS_PUBLIC_KEY'),
+        secretAccessKey: this.configService.get<string>('AWS_SECRET_KEY')
       },
       forcePathStyle: true
     })

@@ -16,12 +16,12 @@ export class OrdersController {
     private usersService: UsersService
   ) { }
 
-  @Post('/webhook')
-  webhook(@Req() req: RawBodyRequest<Request>, @Headers('stripe-signature') sig) {
-    const body = req.rawBody
+  // @Post('/webhook')
+  // webhook(@Req() req: RawBodyRequest<Request>, @Headers('stripe-signature') sig) {
+  //   const body = req.rawBody
 
-    return this.ordersService.webhook(body, sig, endpointSecret)
-  }
+  //   return this.ordersService.webhook(body, sig, endpointSecret)
+  // }
 
   @Get()
   getOrders() {
