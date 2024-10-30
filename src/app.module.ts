@@ -23,7 +23,7 @@ import { BullModule } from '@nestjs/bullmq'
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: `mongodb://${configService.get('MONGO_HOST')}:${configService.get('MONGO_PORT')}/${configService.get('MONGO_DATABASE')}`
+        uri: configService.get('MONGODB_URI')
       }),
       inject: [ConfigService]
     }),
