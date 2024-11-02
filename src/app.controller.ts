@@ -8,16 +8,23 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 export class AppController {
   constructor(private authService: AuthService) { }
 
-  @UseGuards(LocalAuthGuard)
-  @Post('auth/login')
-  login(@Request() req) {
-    console.log({ user: req.user._doc }) // desestructurar usuario de req.user._doc
-    return this.authService.login(req.user._doc)
+  @Get()
+  getRoot() {
+    return {
+      message: "Backend is running"
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('auth/login')
+  login(@Request() req) {
+    console.log({ user: req.user._doc }) // desestructurar usuario de req.user._doc
+    return this.authService.login(req.user._doc)
   }
 }
