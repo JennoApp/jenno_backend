@@ -21,7 +21,7 @@ export class AwsService {
       region: this.s3Region,
       credentials: {
         accessKeyId: this.configService.get<string>('AWS_PUBLIC_KEY'),
-        secretAccessKey: this.configService.get<string>('AWS_SECRET_KEY')
+        secretAccessKey: this.configService.get<string>('AMAZONWS_SECRET_KEY')
       },
       forcePathStyle: true
     })
