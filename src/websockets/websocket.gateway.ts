@@ -20,7 +20,7 @@ export class websocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   server: Server
 
   handleConnection(client: Socket) {
-    console.log(`client connected: ${client.id}`)
+    console.log(`client connected: ${client.id}`) 
   }
 
   handleDisconnect(client: Socket) {

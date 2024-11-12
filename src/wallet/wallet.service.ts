@@ -12,13 +12,24 @@ export class WalletService {
   ) { }
 
   async getWalletById(walletId) {
-    return await this.walletModel.findById(walletId)
+    const wallet = await this.walletModel.findById(walletId).lean();
+
+    if (!wallet) {
+        throw new Error('Wallet not found');
+    }
+
+    // Retornar el objeto wallet en formato JSON
+    return wallet
   }
 
   async getWithdrawalbyId(walletId) {
-    const wallet = await this.walletModel.findById(walletId)
+    const wallet = await this.walletModel.findById(walletId).lean();
 
-    return wallet.withdrawals
+    if (!wallet) {
+        throw new Error('Wallet not found');
+    }
+
+    return { withdrawals: wallet.withdrawals }
   }
 
   async createWallet(userId: string, data: WalletDto): Promise<Wallet> {
