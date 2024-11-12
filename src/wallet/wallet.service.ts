@@ -18,8 +18,9 @@ export class WalletService {
         throw new Error('Wallet not found');
     }
 
-    // Retornar el objeto wallet en formato JSON
-    return wallet
+    return {
+      wallet
+    }
   }
 
   async getWithdrawalbyId(walletId) {
