@@ -76,9 +76,7 @@ export class OrdersService {
       { $group: {_id: null, totalRevenue: { $sum: { $multiply: ['$product.price', '$amount'] } }}}
     ])
 
-    console.log({result})
-
-    return result.length > 0 ? result[0].totalRevenue : 0
+    return {totalRevenue: result.length > 0 ? result[0].totalRevenue : 0}
   }
 
   async getNumberOfSales(userId) {
@@ -87,7 +85,7 @@ export class OrdersService {
       { $count: 'numberOfSales' }
     ])
 
-    return result.length > 0 ? result[0].numberOfSales : 0
+    return { numberOfSales: result.length > 0 ? result[0].numberOfSales : 0}
   }
 
   async updateStatus(id: string, status: string) {

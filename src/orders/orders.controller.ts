@@ -40,8 +40,7 @@ export class OrdersController {
 
   @Get('numberofsales/:userId')
   getNumberOfSales(@Param('userId') userId) {
-    const numberOfSales = this.ordersService.getNumberOfSales(userId)
-    return numberOfSales
+    return this.ordersService.getNumberOfSales(userId)
   }
 
   @Post()
