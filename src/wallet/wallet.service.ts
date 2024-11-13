@@ -13,23 +13,17 @@ export class WalletService {
 
   async getWalletById(walletId) {
     const wallet = await this.walletModel.findById(walletId).lean();
-
     if (!wallet) {
-        throw new Error('Wallet not found');
+        throw new NotFoundException('Wallet not found');
     }
-
-    return {
-      wallet
-    }
+    return { wallet }
   }
 
   async getWithdrawalbyId(walletId) {
     const wallet = await this.walletModel.findById(walletId).lean();
-
     if (!wallet) {
-        throw new Error('Wallet not found');
+        throw new NotFoundException('Wallet not found');
     }
-
     return { withdrawals: wallet.withdrawals }
   }
 
