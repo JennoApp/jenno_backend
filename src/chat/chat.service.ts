@@ -36,11 +36,13 @@ export class ChatService {
       const conversation = await this.conversationsModel.find({
         members: { $in: [userId] }
       })
+
       return {
-        status: 500,
+        status: 200,
         conversation
       }
     } catch (err) {
+
       return {
         status: 500,
         err
