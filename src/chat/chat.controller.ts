@@ -17,7 +17,7 @@ export class ChatController {
 
   @Get('/conversations/:userId')
   getConversation(@Param('userId') userId: string) {
-    return this.chatService.getConversation(userId) 
+    return this.chatService.getConversations(userId) 
   }
 
 

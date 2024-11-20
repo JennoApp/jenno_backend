@@ -10,9 +10,16 @@ export class ChatService {
     @InjectModel('Conversations') private conversationsModel: Model<Conversations>,
     @InjectModel('Message') private messageModel: Model<Message>,
   ) { }
-  
+
   /////////// Conversations /////////////
   async newConversation(senderId: string, receiverId: string) {
+    const existingConversation = await this.conversationsModel.findOne({
+      members: { $all: [senderId, receiverId] }
+    })
+    if (existingConversation) {
+      return { status: 400, message: 'Conversation already exists' }
+    }
+
     const newConversation = new this.conversationsModel({
       members: [senderId, receiverId]
     })
@@ -31,15 +38,15 @@ export class ChatService {
     }
   }
 
-  async getConversation(userId: string) {
+  async getConversations(userId: string) {
     try {
-      const conversation = await this.conversationsModel.find({
+      const conversations = await this.conversationsModel.find({
         members: { $in: [userId] }
       })
 
       return {
         status: 200,
-        conversation
+        conversations
       }
     } catch (err) {
 
@@ -68,19 +75,27 @@ export class ChatService {
     }
   }
 
-  async getMessages(conversationId: string) {
+  async getMessages(conversationId: string, page: number = 1, limit: number = 20) {
     try {
-      const messages = await this.messageModel.find({
-        conversationId: conversationId
-      })
+      const messages = await this.messageModel
+        .find({ conversationId })
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+
+      const totalMessages = await this.messageModel.countDocuments({ conversationId })
+
       return {
         status: 200,
-        messages
+        messages,
+        totalMessages,
+        totalPages: Math.ceil(totalMessages / limit),
+        currentPage: page
       }
-    } catch (err) {
-      return  {
+    } catch (error) {
+      return {
         status: 500,
-        err
+        error
       }
     }
   }
