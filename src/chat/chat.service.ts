@@ -28,12 +28,13 @@ export class ChatService {
       const savedConversation = await newConversation.save()
       return {
         status: 200,
-        savedConversation
+        savedConversation,
+        conversationId: savedConversation._id
       }
-    } catch (err) {
+    } catch (error) {
       return {
         status: 500,
-        err
+        error
       }
     }
   }
