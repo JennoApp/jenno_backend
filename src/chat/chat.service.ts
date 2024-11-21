@@ -13,18 +13,23 @@ export class ChatService {
 
   /////////// Conversations /////////////
   async newConversation(senderId: string, receiverId: string) {
-    const existingConversation = await this.conversationsModel.findOne({
-      members: { $all: [senderId, receiverId] }
-    })
-    if (existingConversation) {
-      return { status: 400, message: 'Conversation already exists' }
-    }
-
-    const newConversation = new this.conversationsModel({
-      members: [senderId, receiverId]
-    })
-
     try {
+      // Buscar conversacion existente entre los dos usuarios
+      const existingConversation = await this.conversationsModel.findOne({
+        members: { $all: [senderId, receiverId] }
+      })
+      if (existingConversation) {
+        return { 
+          status: 200, 
+          message: 'Conversation already exists',
+          conversationId: existingConversation._id
+        }
+      }
+
+      // Crear una nueva conversacion si no existe
+      const newConversation = new this.conversationsModel({
+        members: [senderId, receiverId]
+      })
       const savedConversation = await newConversation.save()
       return {
         status: 200,
@@ -34,6 +39,7 @@ export class ChatService {
     } catch (error) {
       return {
         status: 500,
+        message: 'Error creating conversation',
         error
       }
     }
