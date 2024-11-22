@@ -8,7 +8,7 @@ export class ChatController {
   constructor(
     private chatService: ChatService,
   ) { }
-  
+
   //////// Conversations ///////
   @Post('/conversations')
   newConversation(@Body() conversation: conversationsDto) {
@@ -17,7 +17,7 @@ export class ChatController {
 
   @Get('/conversations/:userId')
   getConversation(@Param('userId') userId: string) {
-    return this.chatService.getConversations(userId) 
+    return this.chatService.getConversations(userId)
   }
 
 
@@ -28,7 +28,22 @@ export class ChatController {
   }
 
   @Get('/messages/:conversationId')
-  getMessage(@Param('conversationId') conversationId: string) {
-    return this.chatService.getMessages(conversationId)
+  async getMessage(@Param('conversationId') conversationId: string) {
+    if (!conversationId) {
+      return {
+        status: 400,
+        message: 'Invalid conversationId'
+      };
+    }
+    const result = await this.chatService.getMessages(conversationId)
+    if (result.status !== 200) {
+      return {
+        status: result.status,
+        message: 'Error retrieving messages',
+        error: result.error
+      };
+    }
+
+    return result
   }
 }
