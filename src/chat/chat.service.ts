@@ -109,9 +109,11 @@ export class ChatService {
 
       const totalMessages = await this.messageModel.countDocuments({ conversationId })
 
+      const reversedMessages = messages.reverse()
+
       return {
         status: 200,
-        messages,
+        messages: reversedMessages,
         totalMessages,
         totalPages: Math.ceil(totalMessages / limit),
         currentPage: page
