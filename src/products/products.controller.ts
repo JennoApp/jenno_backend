@@ -106,7 +106,8 @@ export class ProductsController {
 
         ///
         options: product.options,
-        especifications: product.especifications
+        especifications: product.especifications,
+        visibility: product.visibility 
       }
 
       await this.productsService.updateProduct(product.productId, updateProduct)
@@ -145,7 +146,8 @@ export class ProductsController {
         //   : this.productsService.ensureUniqueCountries(productData?.country, [req.user.country]),
         ///
         options: product.options,
-        especifications: product.especifications
+        especifications: product.especifications,
+        visibility: product.visibility
       }
 
       const saveProduct = await this.productsService.createProduct(newProduct)
