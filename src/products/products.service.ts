@@ -54,12 +54,18 @@ export class ProductsService {
     const regexQuery = new RegExp(terms, 'i')
 
     const products = await this.productModel
-      .find({ productname: { $regex: regexQuery } })
+      .find({ 
+        productname: { $regex: regexQuery },
+        visibility: true
+       })
       .limit(limit)
       .skip((page - 1) * limit)
       .exec()
 
-    const itemCount = await this.productModel.countDocuments({ productname: { $regex: regexQuery } })
+    const itemCount = await this.productModel.countDocuments({
+      productname: { $regex: regexQuery },
+      visibility: true
+    })
 
     return new PaginatedDto(products, page, limit, itemCount)
   }
@@ -192,12 +198,20 @@ export class ProductsService {
     const regexQuery = new RegExp(terms, 'i')
 
     const products = await this.productModel
-      .find({ username: username, productname: { $regex: regexQuery } })
+      .find({ 
+        username: username, 
+        productname: { $regex: regexQuery }, 
+        visibility: true
+      })
       .limit(limit)
       .skip((page - 1) * limit)
       .exec()
 
-    const itemCount = await this.productModel.countDocuments({ productname: { $regex: regexQuery } })
+    const itemCount = await this.productModel.countDocuments({
+      username: username,
+      productname: { $regex: regexQuery }, 
+      visibility: true
+    })
 
     return new PaginatedDto(products, page, limit, itemCount)
   }
