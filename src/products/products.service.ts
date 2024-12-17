@@ -273,6 +273,7 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado')
     } 
 
+    console.log('Valor recibido:', visibility)
     product.visibility = visibility
     await product.save()
     
