@@ -242,4 +242,24 @@ export class ProductsController {
 
     return product
   }
+
+  @Post('updatevisibility/:id')
+  async updateVisibility(@Param('id') id,@Body() body: { visibility: boolean }) {
+    if (typeof body.visibility !== 'boolean') {
+      return {
+        message: 'El campo visibility debe ser booleano'
+      }
+    }
+
+    const updatedProduct = await this.productsService.updateProduct(id, body.visibility)
+
+    return {
+      message: 'Visibilidad actualizada correctamente',
+      product: {
+        id: updatedProduct?._id,
+        visibility: updatedProduct?.visibility
+      }
+    }
+
+  }
 }

@@ -265,4 +265,19 @@ export class ProductsService {
 
     return combinedCountries
   }
+
+  async updateVisibility(productId: string, visibility: boolean) {
+    const product = await this.productModel.findByIdAndUpdate(
+      productId,
+      { visibility },
+      { new: true }
+    )
+
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado')
+    } 
+    await product.save()
+    
+    return product
+  }
 }
