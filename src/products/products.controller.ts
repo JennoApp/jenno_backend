@@ -251,7 +251,7 @@ export class ProductsController {
       }
     }
 
-    const updatedProduct = await this.productsService.updateProduct(id, body.visibility as any)
+    const updatedProduct = await this.productsService.updateVisibility(id, body.visibility)
 
     return {
       message: 'Visibilidad actualizada correctamente',
@@ -260,6 +260,5 @@ export class ProductsController {
         visibility: updatedProduct?.visibility
       }
     }
-
   }
 }
