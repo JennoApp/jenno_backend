@@ -251,7 +251,7 @@ export class ProductsController {
       }
     }
 
-    const updatedProduct = await this.productsService.updateProduct(id, body.visibility)
+    const updatedProduct = await this.productsService.updateProduct(id, body.visibility as any)
 
     return {
       message: 'Visibilidad actualizada correctamente',

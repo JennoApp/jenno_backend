@@ -267,15 +267,13 @@ export class ProductsService {
   }
 
   async updateVisibility(productId: string, visibility: boolean) {
-    const product = await this.productModel.findByIdAndUpdate(
-      productId,
-      { visibility },
-      { new: true }
-    )
+    const product = await this.productModel.findById(productId)
 
     if (!product) {
       throw new NotFoundException('Producto no encontrado')
     } 
+
+    product.visibility = visibility
     await product.save()
     
     return product
