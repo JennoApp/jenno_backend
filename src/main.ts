@@ -38,6 +38,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
+      '*',
       'https://jenno-client.vercel.app',
       'https://jenno.com.co'
     ],
