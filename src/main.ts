@@ -10,7 +10,7 @@ async function bootstrap() {
     cors: true,
     rawBody: true
   });
-  
+
   const configService = app.get(ConfigService)
   const port = configService.get('PORT') || 3000
 
@@ -36,16 +36,25 @@ async function bootstrap() {
   // Crear y configurar adaptador
   app.useWebSocketAdapter(new CustomIoAdapter(app))
 
+  app.use((req, res, next) => {
+    console.log('Cors middleware: Origin:', req.headers.origin)
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    next();
+  })
+
   app.enableCors({
     origin: [
-      '*',
       'https://jenno-client.vercel.app',
       'https://jenno.com.co'
     ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
   })
 
-  
+
 
   await app.listen(port);
   console.log(`This application is running on: ${await app.getUrl()}`)
