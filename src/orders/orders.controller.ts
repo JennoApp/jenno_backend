@@ -43,7 +43,7 @@ export class OrdersController {
     return this.ordersService.getNumberOfSales(userId)
   }
 
-  @Post()
+  @Post('createOrder')
   async createOrder(@Body() order: OrderDto) {
     try {
       const newOrder = {
