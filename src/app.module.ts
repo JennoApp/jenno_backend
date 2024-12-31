@@ -27,12 +27,14 @@ import { BullModule } from '@nestjs/bullmq'
       }),
       inject: [ConfigService]
     }),
-    BullModule.forRootAsync({
+    BullModule.forRootAsync({ 
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        connection: { 
+        connection: {
         host: configService.get('REDIS_HOST'),
         port: configService.get<number>('REDIS_PORT'),
+        username: configService.get('REDIS_USERNAME'),
+        password: configService.get('REDIS_PASSWORD'),
       },
       defaultJobOptions: {
         removeOnComplete: configService.get<boolean>('REDIS_JOB_REMOVE_ON_COMPLETE'),
@@ -41,7 +43,6 @@ import { BullModule } from '@nestjs/bullmq'
       }
       }),
       inject: [ConfigService], 
-      
     }),
     AuthModule,
     UsersModule,
