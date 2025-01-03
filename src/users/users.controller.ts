@@ -24,7 +24,7 @@ export class UsersController {
     return this.usersService.getUser(id)
   }
 
-  @Get('getusername/:id')
+  @Get('/getusername/:id')
   getUsername(@Param('id') id) {
     return this.usersService.getUsername(id)
   }
