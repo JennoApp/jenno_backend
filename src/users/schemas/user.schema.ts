@@ -7,6 +7,12 @@ export const UserSchema = new Schema({
     minLength: [3, "Username must be at least 3 characters"],
     maxLength: [30, "Username must be at most 30 characters"]
   },
+  displayname: {
+    type: String,
+    required: true,
+    minLength: [3, "Username must be at least 3 characters"],
+    maxLength: [30, "Username must be at most 30 characters"]
+  },
   profileImg: {
     type: String,
     required: false

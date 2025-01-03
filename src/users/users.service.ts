@@ -48,7 +48,7 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      const { username, email, name, lastname, taxid, password, accountType, currency } = user;
+      const { username, displayname, email, name, lastname, taxid, password, accountType, currency } = user;
       if (!password || password.length < 6) {
         return {
           message: 'Password must be at least 6 characters',
@@ -70,6 +70,7 @@ export class UsersService {
       if (accountType === 'personal') {
         newUser = new this.userModel({
           username: username,
+          displayname: displayname,
           profileImg: "",
           email: email,
           password: hashedPassword,
@@ -78,6 +79,7 @@ export class UsersService {
       } else if (accountType === 'business') {
         newUser = new this.userModel({
           username: username,
+          displayname: displayname,
           profileImg: "",
           email: email,
           name: name,
@@ -184,6 +186,7 @@ export class UsersService {
     try {
       const userInfo = await this.userModel.findByIdAndUpdate(userId, {
         username: user.username,
+        displayname: user.displayname,
         email: user.email,
         bio: user.bio,
         country: user.country,
