@@ -37,7 +37,9 @@ export class UsersService {
 
   async getUsername(id: string) {
     const { username } = await this.userModel.findById(id)
-    return username
+    return {
+      username
+    }
   }
 
   async getProfileImg(id: string) {
