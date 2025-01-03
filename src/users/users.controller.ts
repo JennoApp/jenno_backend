@@ -24,6 +24,11 @@ export class UsersController {
     return this.usersService.getUser(id)
   }
 
+  @Get('getusername/:id')
+  getUsername(@Param('id') id) {
+    return this.usersService.getUsername(id)
+  }
+
   @Get('/followers/:id')
   getFollowers(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
     return this.usersService.getFollowers(id, page, limit)
@@ -85,7 +90,7 @@ export class UsersController {
   async updateProfileImg(@UploadedFile() file: Express.Multer.File, @Request() req) {
     console.log(req.user)
     console.log(file)
-    //console.log({imgUrl}) 
+    //console.log({imgUrl})
     try {
       // Subir la imagen a Aws S3
       const { publicUrl } = await this.awsService.uploadFile(file, 'profile')
@@ -107,7 +112,7 @@ export class UsersController {
         message: "Error al actualizar la imagen de perfil",
         status: HttpStatus.INTERNAL_SERVER_ERROR
       }
-    } 
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -116,7 +121,7 @@ export class UsersController {
     return this.usersService.updateUser(req?.user?.userId, user)
   }
 
-  
+
   @UseGuards(JwtAuthGuard)
   @Post('/following/:id')
   following(@Param('id') id: string, @Request() req) {
