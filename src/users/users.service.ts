@@ -191,6 +191,12 @@ export class UsersService {
   // Actualizar informacion del usuario
   async updateUser(userId: string, user: any) {
     try {
+      // Verificar si el username ya está en uso por otro usuario
+      const existingUser = await this.userModel.findOne({ username: user.username });
+      if (existingUser && existingUser._id.toString() !== userId) {
+        throw new Error(`El nombre de usuario "${user.username}" ya está en uso.`);
+      }
+
       const userInfo = await this.userModel.findByIdAndUpdate(userId, {
         username: user.username,
         displayname: user.displayname,
@@ -200,7 +206,7 @@ export class UsersService {
         legalname: user.legalname,
         legallastname: user.legallastname,
         taxid: user.taxid
-      })
+      }, { new: true })
 
       return userInfo
     } catch (err) {
