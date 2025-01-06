@@ -204,7 +204,7 @@ export class ProductsService {
 
     const products = await this.productModel
       .find({
-        _id: objectIDUserId,
+        user: objectIDUserId,
         productname: { $regex: regexQuery },
         visibility: true
       })
@@ -215,7 +215,7 @@ export class ProductsService {
     console.log("Productos encontrados:", products)
 
     const itemCount = await this.productModel.countDocuments({
-      _id: objectIDUserId,
+      user: objectIDUserId,
       productname: { $regex: regexQuery },
       visibility: true
     })
