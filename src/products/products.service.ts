@@ -54,10 +54,10 @@ export class ProductsService {
     const regexQuery = new RegExp(terms, 'i')
 
     const products = await this.productModel
-      .find({ 
+      .find({
         productname: { $regex: regexQuery },
         visibility: true
-       })
+      })
       .limit(limit)
       .skip((page - 1) * limit)
       .exec()
@@ -194,22 +194,39 @@ export class ProductsService {
       return new PaginatedDto([], page, limit, 0)
     }
 
-    const terms = query.split(" ").map(term => `(?=.*${term})`).join("")
+    if (query.trim() === "") {
+      const products = await this.productModel
+        .find({ username, visibility: true })
+        .limit(limit)
+        .skip((page - 1) * limit)
+        .exec();
+
+      const itemCount = await this.productModel.countDocuments({ username, visibility: true });
+
+      return new PaginatedDto(products, page, limit, itemCount);
+    }
+
+    const escapeRegex = (term: string) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const terms = query.split(" ").map(term => `(?=.*${escapeRegex(term)})`).join("")
     const regexQuery = new RegExp(terms, 'i')
 
+    console.log("Regex Query:", regexQuery)
+
     const products = await this.productModel
-      .find({ 
-        username: username, 
-        productname: { $regex: regexQuery }, 
+      .find({
+        username: username,
+        productname: { $regex: regexQuery },
         visibility: true
       })
       .limit(limit)
       .skip((page - 1) * limit)
       .exec()
 
+    console.log("Productos encontrados:", products)
+
     const itemCount = await this.productModel.countDocuments({
       username: username,
-      productname: { $regex: regexQuery }, 
+      productname: { $regex: regexQuery },
       visibility: true
     })
 
@@ -271,11 +288,11 @@ export class ProductsService {
 
     if (!product) {
       throw new NotFoundException('Producto no encontrado')
-    } 
+    }
 
     product.visibility = visibility
     await product.save()
-    
+
     return product
   }
 }

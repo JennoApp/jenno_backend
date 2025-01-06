@@ -35,6 +35,17 @@ export class UsersService {
     return await this.userModel.findById(id)
   }
 
+  async getUserId(username: string) {
+    const user = await this.userModel.findOne({ username }).select('_id').exec()
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado')
+    }
+
+    return {
+      id: user._id
+    }
+  }
+
   async getUsername(id: string) {
     const { username } = await this.userModel.findById(id)
     return {

@@ -24,6 +24,11 @@ export class UsersController {
     return this.usersService.getUser(id)
   }
 
+  @Get('/getUserId/:username')
+  getUserId(@Param('username') username: string) {
+    return this.usersService.getUserId(username)
+  }
+
   @Get('/getusername/:id')
   getUsername(@Param('id') id) {
     return this.usersService.getUsername(id)
