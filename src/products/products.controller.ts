@@ -17,7 +17,7 @@ export class ProductsController {
   @Get()
   getProducts(
     @Query('page') page: number,
-    @Query('limit') limit: number, 
+    @Query('limit') limit: number,
     @Query('country') country: string,
     @Query('category') category: string
   ) {
@@ -54,15 +54,15 @@ export class ProductsController {
     return this.productsService.getRandomProductsFromFollowedShops(userid, page, limit, country)
   }
 
-  @Get('/searchbyuser/:username')
-  getSearchProductsbyUser(@Param('username') username, @Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
-    return this.productsService.searchProductsbyUser(username, query, page, limit)
+  @Get('/searchbyuser/:id')
+  getSearchProductsbyUser(@Param('id') userId, @Query('query') query: string, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.productsService.searchProductsbyUser(userId, query, page, limit)
   }
 
   @Get('/categories/random')
   getRandomCategories(@Query('limit') limit?: string) {
     const numLimit = limit ? parseInt(limit, 10) : 10
-    
+
     if (isNaN(numLimit) || numLimit <= 0) {
       throw new BadRequestException('El limite debe ser un numero positivo.')
     }
@@ -96,7 +96,7 @@ export class ProductsController {
           width: product.dimensions.width,
           height: product.dimensions.height,
         },
-        /// 
+        ///
         status: product.status,
         user: req.user.userId,
         username: req.user.username,
@@ -107,7 +107,7 @@ export class ProductsController {
         ///
         options: product.options,
         especifications: product.especifications,
-        visibility: product.visibility 
+        visibility: product.visibility
       }
 
       await this.productsService.updateProduct(product.productId, updateProduct)
@@ -134,7 +134,7 @@ export class ProductsController {
         length: product.dimensions.length,
         width: product.dimensions.width,
         height: product.dimensions.height,
-        /// 
+        ///
         status: product.status,
         user: req.user.userId,
         username: req.user.username,

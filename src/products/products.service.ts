@@ -189,19 +189,22 @@ export class ProductsService {
   }
 
 
-  async searchProductsbyUser(username: string, query: string, page: number, limit: number) {
+  async searchProductsbyUser(userId: string, query: string, page: number, limit: number) {
     if (query.trim() === "") {
       return new PaginatedDto([], page, limit, 0)
     }
 
     if (query.trim() === "") {
       const products = await this.productModel
-        .find({ username, visibility: true })
+        .find({ _id: userId, visibility: true })
         .limit(limit)
         .skip((page - 1) * limit)
         .exec();
 
-      const itemCount = await this.productModel.countDocuments({ username, visibility: true });
+      const itemCount = await this.productModel.countDocuments({
+        _id: userId,
+        visibility: true
+      });
 
       return new PaginatedDto(products, page, limit, itemCount);
     }
@@ -214,7 +217,7 @@ export class ProductsService {
 
     const products = await this.productModel
       .find({
-        username: username,
+        _id: userId,
         productname: { $regex: regexQuery },
         visibility: true
       })
@@ -225,7 +228,7 @@ export class ProductsService {
     console.log("Productos encontrados:", products)
 
     const itemCount = await this.productModel.countDocuments({
-      username: username,
+      _id: userId,
       productname: { $regex: regexQuery },
       visibility: true
     })
