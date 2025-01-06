@@ -194,20 +194,7 @@ export class ProductsService {
       return new PaginatedDto([], page, limit, 0)
     }
 
-    if (query.trim() === "") {
-      const products = await this.productModel
-        .find({ _id: userId, visibility: true })
-        .limit(limit)
-        .skip((page - 1) * limit)
-        .exec();
-
-      const itemCount = await this.productModel.countDocuments({
-        _id: userId,
-        visibility: true
-      });
-
-      return new PaginatedDto(products, page, limit, itemCount);
-    }
+    const objectIDUserId = new mongoose.Types.ObjectId(userId)
 
     const escapeRegex = (term: string) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const terms = query.split(" ").map(term => `(?=.*${escapeRegex(term)})`).join("")
@@ -217,7 +204,7 @@ export class ProductsService {
 
     const products = await this.productModel
       .find({
-        _id: userId,
+        _id: objectIDUserId,
         productname: { $regex: regexQuery },
         visibility: true
       })
@@ -228,7 +215,7 @@ export class ProductsService {
     console.log("Productos encontrados:", products)
 
     const itemCount = await this.productModel.countDocuments({
-      _id: userId,
+      _id: objectIDUserId,
       productname: { $regex: regexQuery },
       visibility: true
     })
