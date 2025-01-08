@@ -29,6 +29,11 @@ async function bootstrap() {
         },
         transports: ['polling', 'websocket'], // Transportes permitidos
       });
+
+      server.on('connection', (socket) => {
+        console.log(`Socket conectado: ${socket.id}`)
+      })
+
       return server;
     }
   }
@@ -37,20 +42,36 @@ async function bootstrap() {
   app.useWebSocketAdapter(new CustomIoAdapter(app))
 
   app.use((req, res, next) => {
-    console.log('Cors middleware: Origin:', req.headers.origin)
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    const origin = req.headers.origin || '*'
+    console.log('Cors middleware: Origin:', origin)
+
+    res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.header('Access-Control-Allow-Credentials', 'true');
     next();
   })
 
+  app.use((req, res, next) => {
+    console.log('Request Headers:', req.headers);
+    next();
+  });
+
+
   app.enableCors({
-    origin: [
-      'https://jenno-client.vercel.app',
-      'https://jenno.com.co',
-      'redis://default:XwKGfXdDVpIKSwAJrKnnuRGFseSpKhsc@redis-production-af4e.up.railway.app:6379'
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://jenno-client.vercel.app',
+        'https://jenno.com.co',
+        'redis://default:XwKGfXdDVpIKSwAJrKnnuRGFseSpKhsc@redis-production-af4e.up.railway.app:6379'
+      ]
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
   })
