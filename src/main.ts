@@ -29,11 +29,6 @@ async function bootstrap() {
         },
         transports: ['polling', 'websocket'], // Transportes permitidos
       });
-
-      server.on('connection', (socket) => {
-        console.log(`Socket conectado: ${socket.id}`)
-      })
-
       return server;
     }
   }
