@@ -35,12 +35,19 @@ import { BullModule } from '@nestjs/bullmq'
         port: configService.get<number>('REDIS_PORT'),
         username: configService.get('REDIS_USERNAME'),
         password: configService.get('REDIS_PASSWORD'),
+        connectTimeout: 10000,
+        retryStrategy(times) {
+          const delay = Math.min(times * 50, 2000)
+          console.log(`Retrying connection to Redis, attempt: ${times}, delay: ${delay}ms`)
+
+          return delay
+        },
       },
-      
+
       defaultJobOptions: {
-        removeOnComplete: configService.get<boolean>('REDIS_JOB_REMOVE_ON_COMPLETE'),
-        removeOnFail: configService.get<boolean>('REDIS_JOB_REMOVE_ON_FAIL'),
-        attempts: configService.get<number>('REDIS_JOB_ATTEMPTS')
+        removeOnComplete: configService.get<boolean>('REDIS_JOB_REMOVE_ON_COMPLETE') ?? true,
+        removeOnFail: configService.get<boolean>('REDIS_JOB_REMOVE_ON_FAIL') ?? false,
+        attempts: configService.get<number>('REDIS_JOB_ATTEMPTS') ?? 5
       }
       }),
       inject: [ConfigService],
