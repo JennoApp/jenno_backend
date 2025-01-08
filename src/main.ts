@@ -49,7 +49,7 @@ async function bootstrap() {
     origin: [
       'https://jenno-client.vercel.app',
       'https://jenno.com.co',
-      'redis://default:XwKGfXdDVpIKSwAJrKnnuRGFseSpKhsc@junction.proxy.rlwy.net:44518'
+      'redis://default:XwKGfXdDVpIKSwAJrKnnuRGFseSpKhsc@redis-production-af4e.up.railway.app:6379'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true

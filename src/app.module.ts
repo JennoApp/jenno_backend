@@ -27,7 +27,7 @@ import { BullModule } from '@nestjs/bullmq'
       }),
       inject: [ConfigService]
     }),
-    BullModule.forRootAsync({ 
+    BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         connection: {
@@ -36,13 +36,14 @@ import { BullModule } from '@nestjs/bullmq'
         username: configService.get('REDIS_USERNAME'),
         password: configService.get('REDIS_PASSWORD'),
       },
+      
       defaultJobOptions: {
         removeOnComplete: configService.get<boolean>('REDIS_JOB_REMOVE_ON_COMPLETE'),
         removeOnFail: configService.get<boolean>('REDIS_JOB_REMOVE_ON_FAIL'),
         attempts: configService.get<number>('REDIS_JOB_ATTEMPTS')
       }
       }),
-      inject: [ConfigService], 
+      inject: [ConfigService],
     }),
     AuthModule,
     UsersModule,
@@ -52,7 +53,7 @@ import { BullModule } from '@nestjs/bullmq'
     OrdersModule,
     WalletModule,
     WebSocketModule,
-    MailsModule,  
+    MailsModule,
   ],
   controllers: [AppController],
   providers: [],
