@@ -9,7 +9,6 @@ export const UserSchema = new Schema({
   },
   displayname: {
     type: String,
-    required: true,
     minLength: [3, "Username must be at least 3 characters"],
     maxLength: [30, "Username must be at most 30 characters"]
   },
@@ -27,7 +26,7 @@ export const UserSchema = new Schema({
     required: true
   },
   bio: {
-    
+
     type: String,
     required: false
   },
@@ -42,7 +41,7 @@ export const UserSchema = new Schema({
   services: [{
     type: Schema.Types.ObjectId,
     ref: 'Service'
-  }], 
+  }],
   followers: [String],
   following: [String],
   cart: [{
@@ -51,7 +50,7 @@ export const UserSchema = new Schema({
   }],
   // Shipping info
   shippingInfo: {
-    country: String, 
+    country: String,
     address: String,
     city:  String,
     state: String,
@@ -67,7 +66,7 @@ export const UserSchema = new Schema({
   shopping: [{
     type: Schema.Types.ObjectId,
     ref: 'Order'
-  }], 
+  }],
   // Legal information
   legalname: {
     type: String
