@@ -359,7 +359,7 @@ export class UsersService {
       const userWithOrders = await this.userModel
         .findById(id)
         .populate({
-          path: 'orders',
+          path: 'shopping',
           match: { status: { $ne: 'completed' } },
           select: '_id',
           options: {
