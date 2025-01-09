@@ -359,7 +359,7 @@ export class UsersService {
       const userWithOrders = await this.userModel
         .findById(id)
         .populate({
-          path: 'shopping',
+          path: 'orders',
           match: { status: { $ne: 'completed' } },
           select: '_id',
           options: {
@@ -377,7 +377,7 @@ export class UsersService {
 
       const ordersCount = orderIds.length;
 
-      console.log({ orderIds });
+      console.log({ orderIds, page, limit, ordersCount });
 
       return new PaginatedDto(orderIds, page, limit, ordersCount);
     } catch (error) {
