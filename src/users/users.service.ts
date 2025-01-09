@@ -354,35 +354,58 @@ export class UsersService {
     }
   }
 
-  async getShopping(id: string, page: number, limit: number) {
+  // async getShopping(id: string, page: number, limit: number) {
+  //   try {
+  //     const userWithOrders = await this.userModel
+  //       .findById(id)
+  //       .populate({
+  //         path: 'orders',
+  //         match: { status: { $ne: 'completed' } },
+  //         select: '_id',
+  //         options: {
+  //           limit: limit,
+  //           skip: (page - 1) * limit
+  //         }
+  //       })
+  //       .exec();
+
+  //     if (!userWithOrders) {
+  //       throw new NotFoundException('User not Found');
+  //     }
+
+  //     const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id);
+
+  //     const ordersCount = orderIds.length;
+
+  //     console.log({ orderIds, page, limit, ordersCount });
+
+  //     return new PaginatedDto(orderIds, page, limit, ordersCount);
+  //   } catch (error) {
+  //     console.error('Error retrieving completed orders:', error);
+  //     throw new InternalServerErrorException('Failed to retrieve completed orders');
+  //   }
+  // }
+
+   async getShopping(id: string, page: number, limit: number) {
     try {
-      const userWithOrders = await this.userModel
+      const user = await this.userModel
         .findById(id)
-        .populate({
-          path: 'orders',
-          match: { status: { $ne: 'completed' } },
-          select: '_id',
-          options: {
-            limit: limit,
-            skip: (page - 1) * limit
-          }
-        })
         .exec();
 
-      if (!userWithOrders) {
+      if (!user) {
         throw new NotFoundException('User not Found');
       }
 
-      const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id);
+      const shoppingList = user.shopping
 
-      const ordersCount = orderIds.length;
+      const ordersCount = shoppingList.length;
 
-      console.log({ orderIds, page, limit, ordersCount });
+      console.log({ shoppingList, page, limit, ordersCount });
 
-      return new PaginatedDto(orderIds, page, limit, ordersCount);
+      return new PaginatedDto(shoppingList, page, limit, ordersCount);
     } catch (error) {
-      console.error('Error retrieving completed orders:', error);
-      throw new InternalServerErrorException('Failed to retrieve completed orders');
+      console.error('Error to get Shopping List:', error);
+      throw new InternalServerErrorException('Failed to get Shopping List');
     }
   }
 
