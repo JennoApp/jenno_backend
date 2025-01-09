@@ -47,27 +47,27 @@ export class OrdersService {
   async createOrder(order: OrderDto) {
     const newOrder = new this.orderModel(order)
     const savedOrder =  await newOrder.save()
-    
+
     // Calcula el total del precio del producto sin comision
-    const productTotal = savedOrder?.product?.price * savedOrder?.amount
+    const productTotal = savedOrder.product.price * savedOrder.amount
     const totalAfterComission = productTotal * 0.9
 
     // Calcular el costo total de envio
-    const totalShipping = savedOrder?.product?.shippingfee * savedOrder?.amount
+    const totalShipping = savedOrder.product.shippingfee * savedOrder.amount
 
     // Actualizar el balance pendiente del wallet del vendedor
     await this.walletService.updatePendingBalance(order.sellerId, totalAfterComission + totalShipping)
 
-    // Agregar trabajo a la cola para actualizar el estado en 2 dias
+    // Agregar trabajo a la cola para actualizar el estado en 3 dias
     await this.autoCompleteOrder.add(
       'completeOrder',
       { orderId: savedOrder._id },
-      { delay: 2 * 60 * 1000 }
+      { delay: 3 * 60 * 1000 }
     )
 
     console.log(`job added to queue for orderId: ${savedOrder._id}`)
 
-    return savedOrder 
+    return savedOrder
   }
 
   async getTotalRevenue(userId) {
@@ -99,5 +99,5 @@ export class OrdersService {
     order.save()
 
     return order
-  } 
+  }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, InternalServerErrorException, NotFoundException, Put } from '@nestjs/common'
+import { BadRequestException, InternalServerErrorException, NotFoundException, Put, HttpException } from '@nestjs/common'
 import { Controller, Headers, Get, Post, RawBodyRequest, Req, Body, Param } from "@nestjs/common";
 import { OrdersService } from './orders.service'
 import { UsersService } from '../users/users.service'
@@ -46,6 +46,13 @@ export class OrdersController {
   @Post('createOrder')
   async createOrder(@Body() order: OrderDto) {
     try {
+      console.log('Datos recibidos:', order)
+
+      if (!order.product || !order.buyerId || !order.sellerId) {
+        throw new BadRequestException('Faltan datos obligatorios en la orden')
+
+      }
+
       const newOrder = {
         product: order.product,
         buyerId: order.buyerId,
@@ -58,35 +65,42 @@ export class OrdersController {
       }
 
       const saveOrder = await this.ordersService.createOrder(newOrder)
+      console.log('Orden creada con exito:', saveOrder)
 
+      // Actualizar vendedor
       // guarda Id de Orden en usuario que vende
-      const userSeller: any = await this.usersService.getUser(order?.sellerId)
-      userSeller.orders = [...userSeller.orders, saveOrder._id]
+      const userSeller: any = await this.usersService.getUser(order.sellerId)
+      if (!userSeller || !Array.isArray(userSeller.orders)) {
+        throw new BadRequestException('Usuario vendedor inválido');
+      }
+      userSeller.orders.push(saveOrder._id)
       await userSeller.save()
 
+      // Actualizar producto
       // obtiene el producto y resta la cantidad de la orden
       const product: any = await this.productsService.getProduct(order.product?._id)
       product.quantity -= order.amount
       await product.save()
 
+      // Actualizar comprador
       // guarda Id de Orden en usuario que compra
       const userBuyer: any = await this.usersService.getUser(order?.buyerId)
-      userBuyer.shopping = [...userBuyer.shopping, saveOrder._id]
+      if (!userBuyer || !Array.isArray(userBuyer.shopping)) {
+        throw new BadRequestException('Usuario comprador inválido');
+      }
+      userBuyer.shopping.push(saveOrder._id)
       await userBuyer.save()
 
       return {
         msg: 'Order created',
         order: saveOrder,
-        sellerId: order.product?.user
+        sellerId: order.product.user
       }
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message)
-      } else if (error instanceof BadRequestException) {
-        throw new BadRequestException(error.message)
-      } else {
-        throw new InternalServerErrorException('An unexpected error occurred')
-      }
+      console.error('Error en createOrder:', error);
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException('An unexpected error occurred');
     }
   }
 
