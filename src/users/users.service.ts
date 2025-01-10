@@ -290,35 +290,58 @@ export class UsersService {
     }
   }
 
+  // async getOrders(userId: string, page: number, limit: number) {
+  //   try {
+  //     const userWithOrders = await this.userModel
+  //       .findById(userId)
+  //       .populate({
+  //         path: 'orders',
+  //         match: { status: { $ne: 'completed' } },
+  //         select: '_id',
+  //         options: {
+  //           limit: limit,
+  //           skip: (page - 1) * limit
+  //         }
+  //       })
+  //       .exec()
+
+  //     if (!userWithOrders) {
+  //       throw new NotFoundException('User not Found')
+  //     }
+
+  //     const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id)
+
+  //     const ordersCount = orderIds.length
+
+  //     console.log({ orderIds })
+
+  //     return new PaginatedDto(orderIds, page, limit, ordersCount)
+  //   } catch (error) {
+  //     console.error('Error retrieving orders:', error)
+  //     throw new InternalServerErrorException('Failed to retrieve orders')
+  //   }
+  // }
+
   async getOrders(userId: string, page: number, limit: number) {
     try {
-      const userWithOrders = await this.userModel
+      const user = await this.userModel
         .findById(userId)
-        .populate({
-          path: 'orders',
-          match: { status: { $ne: 'completed' } },
-          select: '_id',
-          options: {
-            limit: limit,
-            skip: (page - 1) * limit
-          }
-        })
         .exec()
 
-      if (!userWithOrders) {
+      if (!user) {
         throw new NotFoundException('User not Found')
       }
 
-      const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id)
+      const orderList = user.orders
 
-      const ordersCount = orderIds.length
+      const ordersCount = orderList.length
 
-      console.log({ orderIds })
+      console.log({ orderList, page, limit, ordersCount })
 
-      return new PaginatedDto(orderIds, page, limit, ordersCount)
+      return new PaginatedDto(orderList, page, limit, ordersCount)
     } catch (error) {
-      console.error('Error retrieving orders:', error)
-      throw new InternalServerErrorException('Failed to retrieve orders')
+      console.error('Error to get order List:', error)
+      throw new InternalServerErrorException('Failed to get order List')
     }
   }
 
