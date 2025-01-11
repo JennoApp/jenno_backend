@@ -290,49 +290,26 @@ export class UsersService {
     }
   }
 
-  // async getOrders(userId: string, page: number, limit: number) {
-  //   try {
-  //     const userWithOrders = await this.userModel
-  //       .findById(userId)
-  //       .populate({
-  //         path: 'orders',
-  //         match: { status: { $ne: 'completed' } },
-  //         select: '_id',
-  //         options: {
-  //           limit: limit,
-  //           skip: (page - 1) * limit
-  //         }
-  //       })
-  //       .exec()
-
-  //     if (!userWithOrders) {
-  //       throw new NotFoundException('User not Found')
-  //     }
-
-  //     const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id)
-
-  //     const ordersCount = orderIds.length
-
-  //     console.log({ orderIds })
-
-  //     return new PaginatedDto(orderIds, page, limit, ordersCount)
-  //   } catch (error) {
-  //     console.error('Error retrieving orders:', error)
-  //     throw new InternalServerErrorException('Failed to retrieve orders')
-  //   }
-  // }
-
   async getOrders(userId: string, page: number, limit: number) {
     try {
       const user = await this.userModel
         .findById(userId)
+        .populate({
+          path: 'orders',
+          match: { status: { $ne: 'completed' } },
+          select: '_id',
+          options: {
+            limit: limit,
+            skip: (page - 1) * limit
+          }
+        })
         .exec()
 
       if (!user) {
         throw new NotFoundException('User not Found')
       }
 
-      const orderList = user.orders
+      const orderList = user.orders.map((order: { _id: string }) => order?._id)
 
       const ordersCount = orderList.length
 
@@ -344,6 +321,29 @@ export class UsersService {
       throw new InternalServerErrorException('Failed to get order List')
     }
   }
+
+  // async getOrders(userId: string, page: number, limit: number) {
+  //   try {
+  //     const user = await this.userModel
+  //       .findById(userId)
+  //       .exec()
+
+  //     if (!user) {
+  //       throw new NotFoundException('User not Found')
+  //     }
+
+  //     const orderList = user.orders
+
+  //     const ordersCount = orderList.length
+
+  //     console.log({ orderList, page, limit, ordersCount })
+
+  //     return new PaginatedDto(orderList, page, limit, ordersCount)
+  //   } catch (error) {
+  //     console.error('Error to get order List:', error)
+  //     throw new InternalServerErrorException('Failed to get order List')
+  //   }
+  // }
 
   async getOrdersCompleted(id: string, page: number, limit: number) {
     try {
