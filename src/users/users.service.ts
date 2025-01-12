@@ -422,39 +422,37 @@ export class UsersService {
 
   async getShoppingCompleted(id: string, page: number, limit: number) {
     try {
-      const user = await this.userModel.findById(id).exec();
-      if (!user) {
+      // Obtener el usuario con las órdenes completadas
+      const userWithCompletedOrders = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'shopping',
+          match: { status: 'completed' },
+          select: '_id',
+          options: {
+            limit: limit,
+            skip: (page - 1) * limit
+          }
+        })
+        .exec();
+
+      if (!userWithCompletedOrders) {
         throw new NotFoundException('User not found');
       }
 
-      // Verificar si el usuario tiene órdenes en shopping
-      if (!user.shopping || user.shopping.length === 0) {
-        return new PaginatedDto([], page, limit, 0);
-      }
+      // Obtener los IDs de las órdenes completadas
+      const completedOrderIds = userWithCompletedOrders.shopping.map((order: { _id: string }) => order._id);
+      const ordersCount = completedOrderIds.length;
 
-      const completedOrderIds = await this.userModel
-        .find(
-          {
-            _id: { $in: user.shopping },
-            status: 'completed'
-          },
-          { _id: 1 }
-        )
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .exec();
+      console.log({ completedOrderIds, page, limit, ordersCount });
 
-      const orderIds = completedOrderIds.map(order => order._id)
-      const ordersCount = orderIds.length;
-
-      console.log({ orderIds });
-
-      return new PaginatedDto(orderIds, page, limit, ordersCount);
+      return new PaginatedDto(completedOrderIds, page, limit, ordersCount);
     } catch (error) {
-      console.error('Error retrieving completed orders:', error);
-      throw new InternalServerErrorException('Failed to retrieve completed orders');
+      console.error('Error retrieving completed shopping orders:', error);
+      throw new InternalServerErrorException('Failed to retrieve completed shopping orders');
     }
   }
+
 
   async getShippingInfo(userId) {
     try {
