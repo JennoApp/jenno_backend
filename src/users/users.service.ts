@@ -437,7 +437,7 @@ export class UsersService {
       const userWithShopping = await this.userModel
         .findById(id)
         .populate({
-          path: 'shopping',
+          path: 'orders',
           match: { status: 'completed' },
           select: '_id reviews',
           options: {
