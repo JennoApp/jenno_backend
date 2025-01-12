@@ -64,6 +64,11 @@ export class UsersController {
     return this.usersService.getShoppingWithoutReview(userid, page, limit)
   }
 
+   @Get('/shoppingcompleted/:id')
+  getShoppingCompleted(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
+    return this.usersService.getShoppingCompleted(id, page, limit)
+  }
+
   @Get('/getprofileimg/:id')
   getProfileImg(@Param('id') id) {
     return this.usersService.getProfileImg(id)

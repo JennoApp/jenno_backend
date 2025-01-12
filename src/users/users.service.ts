@@ -355,18 +355,18 @@ export class UsersService {
   }
 
 
-   async getShopping(id: string, page: number, limit: number) {
+  async getShopping(id: string, page: number, limit: number) {
     try {
       const userWithOrders = await this.userModel
         .findById(id)
         .populate({
-         path: 'orders',
-         match: { status: { $ne: 'completed' } },
-         select: '_id',
-         options: {
-          limit: limit,
-          skip: (page - 1) * limit
-         }
+          path: 'orders',
+          match: { status: { $ne: 'completed' } },
+          select: '_id',
+          options: {
+            limit: limit,
+            skip: (page - 1) * limit
+          }
         })
         .exec();
       if (!userWithOrders) {
@@ -417,6 +417,42 @@ export class UsersService {
     } catch (error) {
       console.error('Error retrieving shopping without review:', error)
       throw new InternalServerErrorException('Failed to retrieve shopping without review')
+    }
+  }
+
+  async getShoppingCompleted(id: string, page: number, limit: number) {
+    try {
+      const user = await this.userModel.findById(id).exec();
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Verificar si el usuario tiene órdenes en shopping
+      if (!user.shopping || user.shopping.length === 0) {
+        return new PaginatedDto([], page, limit, 0);
+      }
+
+      const completedOrderIds = await this.userModel
+        .find(
+          {
+            _id: { $in: user.shopping },
+            status: 'completed'
+          },
+          { _id: 1 }
+        )
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec();
+
+      const orderIds = completedOrderIds.map(order => order._id)
+      const ordersCount = orderIds.length;
+
+      console.log({ orderIds });
+
+      return new PaginatedDto(orderIds, page, limit, ordersCount);
+    } catch (error) {
+      console.error('Error retrieving completed orders:', error);
+      throw new InternalServerErrorException('Failed to retrieve completed orders');
     }
   }
 
