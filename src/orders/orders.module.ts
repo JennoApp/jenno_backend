@@ -18,13 +18,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
     BullModule.registerQueue({
       name: 'autoCompleteOrder',
     }),
-    // BullModule.registerQueue({
-    //   name: 'autoCompleteOrder',
-    //   connection: {
-    //     host: 'redis.railway.internal',
-    //     port: 6379
-    //   }
-    // }),
     UsersModule,
     ProductsModule,
     WalletModule,
