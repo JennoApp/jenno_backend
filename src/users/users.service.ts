@@ -408,13 +408,15 @@ export class UsersService {
       }
 
       // filtrar los productos que no tienen review del usuario
-      const shoppingWithoutReview = userWithReviews.shopping.filter((product: any) => {
-        return (
-          !product.reviews ||
-          product.reviews.length === 0 ||
-          !product.reviews.some((review: any) => review.user.toString() === id)
-        )
-      })
+      const shoppingWithoutReview = userWithReviews.shopping
+        .filter((product: any) => {
+          return (
+            !product.reviews ||
+            product.reviews.length === 0 ||
+            !product.reviews.some((review: any) => review.user.toString() === id)
+          )
+        })
+        .map((product: any) => product._id)
 
       const shoppingCount = shoppingWithoutReview.length
 
