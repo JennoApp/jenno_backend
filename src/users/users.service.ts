@@ -361,9 +361,9 @@ export class UsersService {
       const userWithOrders = await this.userModel
         .findById(id)
         .populate({
-          path: 'orders',
+          path: 'shopping',
           match: { status: { $ne: 'completed' } },
-          select: '_id',
+          select: '_id status createdAt',
           options: {
             limit: limit,
             skip: (page - 1) * limit
