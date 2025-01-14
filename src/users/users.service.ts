@@ -370,16 +370,17 @@ export class UsersService {
           }
         })
         .exec();
+
       if (!userWithOrders) {
         throw new NotFoundException('User not Found');
       }
 
-      const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id);
-      const ordersCount = orderIds.length;
+      const shoppingIds = userWithOrders.shopping.map((order: { _id: string }) => order?._id);
+      const shoppingCount = shoppingIds.length;
 
-      console.log({ orderIds, page, limit, ordersCount });
+      console.log({ shoppingIds, page, limit, shoppingCount });
 
-      return new PaginatedDto(orderIds, page, limit, ordersCount);
+      return new PaginatedDto(shoppingIds, page, limit, shoppingCount);
     } catch (error) {
       console.error('Error to get Shopping List:', error);
       throw new InternalServerErrorException('Failed to get Shopping List');
