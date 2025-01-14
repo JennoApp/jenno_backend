@@ -389,12 +389,12 @@ export class UsersService {
 
   async getShoppingWithoutReview(id, page: number, limit: number) {
     try {
-      const userWithShopping = await this.userModel
+      const userWithReviews = await this.userModel
         .findById(id)
         .populate({
-          path: 'orders',
+          path: 'shopping',
           match: { status: 'completed' },
-          select: '_id reviews createdAt',
+          select: '_id reviews status createdAt',
           options: {
             sort: { createdAt: -1 },
             limit: limit,
@@ -403,13 +403,17 @@ export class UsersService {
         })
         .exec()
 
-      if (!userWithShopping) {
+      if (!userWithReviews) {
         throw new NotFoundException('User not Found')
       }
 
       // filtrar los productos que no tienen review del usuario
-      const shoppingWithoutReview = userWithShopping.shopping.filter((product: any) => {
-        return !product.reviews || product.reviews.length === 0 || !product.reviews.some((review: any) => review.user.toString() === id)
+      const shoppingWithoutReview = userWithReviews.shopping.filter((product: any) => {
+        return (
+          !product.reviews ||
+          product.reviews.length === 0 ||
+          !product.reviews.some((review: any) => review.user.toString() === id)
+        )
       })
 
       const shoppingCount = shoppingWithoutReview.length

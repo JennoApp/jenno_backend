@@ -49,11 +49,6 @@ export class UsersController {
     return this.usersService.getOrdersCompleted(id, page, limit)
   }
 
-  // @Get('order/:id')
-  // async getOrderPrice(@Param('id') id) {
-  //   const order = await this.usersService.findOne()
-  // }
-
   @Get('/shopping/:id')
   getShopping(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
     return this.usersService.getShopping(id, page, limit)
