@@ -393,8 +393,9 @@ export class UsersService {
         .populate({
           path: 'orders',
           match: { status: 'completed' },
-          select: '_id reviews',
+          select: '_id reviews createdAt',
           options: {
+            sort: { createdAt: -1 },
             limit: limit,
             skip: (page - 1) * limit
           }
