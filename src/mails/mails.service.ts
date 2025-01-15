@@ -1,6 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { MailerService } from '@nestjs-modules/mailer'
-import { User } from "src/users/interfaces/User";
 import { Resend } from 'resend'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcrypt';
@@ -10,9 +8,7 @@ const resend = new Resend('re_RogfRF3F_MLaGM1P1axCfPqWW2ed1tiQN');
 
 @Injectable()
 export class MailsService {
-  constructor(
-    private mailerService: MailerService,
-  ) { }
+  constructor() { }
 
   async resetPassword(userEmail: string) {
     try {
@@ -52,29 +48,29 @@ export class MailsService {
     }
   }
 
-  async sendUserConfirmation(user: User) {
-    const url = ``
-    await this.mailerService.sendMail({
-      to: user.email,
-      subject: "Welcome to Nice App!",
-      template: './welcome',
-      context: {
-        name: user.username,
-        url,
-      }
-    })
-  }
+  // async sendUserConfirmation(user: User) {
+  //   const url = ``
+  //   await this.mailerService.sendMail({
+  //     to: user.email,
+  //     subject: "Welcome to Nice App!",
+  //     template: './welcome',
+  //     context: {
+  //       name: user.username,
+  //       url,
+  //     }
+  //   })
+  // }
 
-  async sendPasswordReset(user: User) {
-    const resetUrl = `http://localhost:5173/reset-p/${user._id}`
-    await this.mailerService.sendMail({
-      to: user.email,
-      subject: "Password Reset Request",
-      template: 'reset-password',
-      context: {
-        name: user.username,
-        resetUrl,
-      }
-    })
-  }
+  // async sendPasswordReset(user: User) {
+  //   const resetUrl = `http://localhost:5173/reset-p/${user._id}`
+  //   await this.mailerService.sendMail({
+  //     to: user.email,
+  //     subject: "Password Reset Request",
+  //     template: 'reset-password',
+  //     context: {
+  //       name: user.username,
+  //       resetUrl,
+  //     }
+  //   })
+  // }
 }
