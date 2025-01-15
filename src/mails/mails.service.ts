@@ -18,18 +18,18 @@ export class MailsService {
         { expiresIn: '1h' }
       )
 
-      const hash = bcrypt.hash(resetToken, 12)
-      const resetUrl = `https://jenno-client.vercel.app/resetpassword?token=${hash}`;
+      const hash = await bcrypt.hash(resetToken, 12)
+      const resetUrl = `https://jenno-client.vercel.app/resetpassword?token=${encodeURIComponent(hash)}`;
 
 
       const { data, error } = await resend.emails.send({
         from: 'Soporte Jenno <soporte@jenno.com.co>',
-        to: [userEmail],
+        to: userEmail,
         subject: 'Restablece tu contraseña',
         html: `
           <p>Hola,</p>
           <p>Recibimos una solicitud para restablecer tu contraseña. Haz clic en el enlace a continuación para continuar:</p>
-          <a href="${resetUrl}">${resetUrl}</a>
+          <a href="${resetUrl}">Restablecer contraseña</a>
           <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
           <p>Atentamente,</p>
           <p>El equipo de Jenno</p>
