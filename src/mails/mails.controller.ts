@@ -15,7 +15,7 @@ export class MailsController {
   }
 
   @Post('resetpassword')
-  resetPassword(@Body() email: string) {
+  resetPassword(@Body('email') email: string) {
     return this.mailsService.resetPassword(email)
   }
 }
