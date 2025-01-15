@@ -6,7 +6,6 @@ import { CreateUserDto } from './dto/createuser.dto';
 import * as bcrypt from 'bcrypt';
 import { PaginatedDto } from './dto/paginated.dto';
 import { WalletService } from '../wallet/wallet.service'
-import { MailsService } from '../mails/mails.service'
 import { AwsService } from 'src/aws/aws.service';
 
 
@@ -15,9 +14,7 @@ export class UsersService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     readonly walletService: WalletService,
-    readonly mailsService: MailsService,
     private awsService: AwsService
-    // apiInstance = new brevo.TransactionalEmailsApi()
   ) { }
 
   async getUsers() {

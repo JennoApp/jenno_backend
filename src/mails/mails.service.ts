@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { Resend } from 'resend'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcrypt';
-import { UsersService } from "src/users/users.service";
+import { UsersService } from '../users/users.service'
 
 
 const resend = new Resend('re_RogfRF3F_MLaGM1P1axCfPqWW2ed1tiQN');
@@ -10,7 +10,7 @@ const resend = new Resend('re_RogfRF3F_MLaGM1P1axCfPqWW2ed1tiQN');
 @Injectable()
 export class MailsService {
   constructor(
-    private usersService: UsersService
+   private readonly usersService: UsersService
   ) { }
 
   async resetPassword(userEmail: string) {

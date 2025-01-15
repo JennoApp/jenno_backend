@@ -138,13 +138,6 @@ export class UsersController {
     return this.usersService.updateShippingInfo(id, shippingInfo)
   }
 
-  @Post('/forgotpassword')
-  sendForgotPasswordEmail(@Body() body: any) {
-    const email = body.email
-    console.log(email)
-    return this.usersService.sendForgotPasswordEmail(email)
-  }
-
   @Patch('paypalaccount/:userid')
   updatePaypalAccount(@Param('userid') userid: string, @Body() updatePayplaDto: { paypalAccount: string }) {
     return this.usersService.updatePaypalAccount(userid, updatePayplaDto)

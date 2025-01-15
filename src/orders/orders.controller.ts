@@ -6,7 +6,6 @@ import { ProductsService } from "src/products/products.service";
 import { OrderDto } from "./dto/order.dto";
 
 
-// const endpointSecret = "whsec_k0B1zmtOLhlvDI7TWq48Crwty89rEIIu"
 
 @Controller('orders')
 export class OrdersController {
@@ -15,13 +14,6 @@ export class OrdersController {
     private ordersService: OrdersService,
     private usersService: UsersService
   ) { }
-
-  // @Post('/webhook')
-  // webhook(@Req() req: RawBodyRequest<Request>, @Headers('stripe-signature') sig) {
-  //   const body = req.rawBody
-
-  //   return this.ordersService.webhook(body, sig, endpointSecret)
-  // }
 
   @Get()
   getOrders() {

@@ -8,9 +8,6 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
 import { WalletService } from "../wallet/wallet.service";
 
-// api key of stripe
-// const stripe = new Stripe('sk_test_51OwBS403Ci0grIYp0SpTaQX8L2K7dYLMLc6OBcVFgOMfx7848THFeaVXWI2HoaVDyjKIJHivaqLfq2SGZE1HUFhU00FqyBwntr')
-
 
 @Injectable()
 export class OrdersService {
@@ -19,18 +16,6 @@ export class OrdersService {
     @InjectQueue('autoCompleteOrder') private readonly autoCompleteOrder: Queue,
     private readonly walletService: WalletService
   ) { }
-
-  // webhook(body, signature, endpointSecret) {
-  //   let event
-
-  //   try {
-  //     event = stripe.webhooks.constructEvent(body, signature, endpointSecret)
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-
-  //   console.log(event)
-  // }
 
   async getOrders() {
     return await this.orderModel.find()
