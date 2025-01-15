@@ -1,14 +1,17 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Resend } from 'resend'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcrypt';
+import { UsersService } from "src/users/users.service";
 
 
 const resend = new Resend('re_RogfRF3F_MLaGM1P1axCfPqWW2ed1tiQN');
 
 @Injectable()
 export class MailsService {
-  constructor() { }
+  constructor(
+    private usersService: UsersService
+  ) { }
 
   async resetPassword(userEmail: string) {
     try {
@@ -18,9 +21,7 @@ export class MailsService {
         { expiresIn: '1h' }
       )
 
-      const hash = await bcrypt.hash(resetToken, 12)
-      const resetUrl = `https://jenno-client.vercel.app/resetpassword?token=${encodeURIComponent(hash)}`;
-
+      const resetUrl = `https://jenno-client.vercel.app/resetpassword?token=${resetToken}`;
 
       const { data, error } = await resend.emails.send({
         from: 'Soporte Jenno <soporte@jenno.com.co>',
@@ -48,29 +49,29 @@ export class MailsService {
     }
   }
 
-  // async sendUserConfirmation(user: User) {
-  //   const url = ``
-  //   await this.mailerService.sendMail({
-  //     to: user.email,
-  //     subject: "Welcome to Nice App!",
-  //     template: './welcome',
-  //     context: {
-  //       name: user.username,
-  //       url,
-  //     }
-  //   })
-  // }
 
-  // async sendPasswordReset(user: User) {
-  //   const resetUrl = `http://localhost:5173/reset-p/${user._id}`
-  //   await this.mailerService.sendMail({
-  //     to: user.email,
-  //     subject: "Password Reset Request",
-  //     template: 'reset-password',
-  //     context: {
-  //       name: user.username,
-  //       resetUrl,
-  //     }
-  //   })
-  // }
+  async updatePassword(token: string, newPassword: string) {
+    try {
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET)
+      const email = decoded.email
+
+      // Obtener el usuario por email
+      const user = await this.usersService.getUserByEmail(email)
+      if (!user) {
+        throw new NotFoundException(`Usuario con el correo ${email} no encontrado.`);
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 12)
+
+      user.password = hashedPassword
+      await user.save()
+
+      return {
+        message: 'Contraseña actualizada exitosamente'
+      }
+    } catch (error) {
+      console.error('Error al actualizar la contraseña:', error);
+      throw new BadRequestException('Token inválido o expirado.');
+    }
+  }
 }

@@ -8,14 +8,7 @@ import { PaginatedDto } from './dto/paginated.dto';
 import { WalletService } from '../wallet/wallet.service'
 import { MailsService } from '../mails/mails.service'
 import { AwsService } from 'src/aws/aws.service';
-// import brevo from '@getbrevo/brevo'
 
-// const apiInstance = new brevo.TransactionalEmailsApi()
-
-// apiInstance.setApiKey(
-//   brevo.TransactionalEmailsApiApiKeys.apiKey,
-//   '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'
-// )
 
 @Injectable()
 export class UsersService {
@@ -51,6 +44,14 @@ export class UsersService {
     return {
       username
     }
+  }
+
+  async getUserByEmail(email: string) {
+    const user = await this.userModel.findOne({ email })
+    if (!user) {
+      throw new NotFoundException(`Usuario con el correo ${email} no encontrado.`)
+    }
+    return user
   }
 
   async getProfileImg(id: string) {
@@ -149,9 +150,6 @@ export class UsersService {
     return await this.userModel.findOne({ _id: userId, accountType: "personal" })
   }
 
-  async findOneByEmail(email: string): Promise<User | null> {
-    return await this.userModel.findOne({ email }).exec()
-  }
 
   async updateUserImg(userId: string, newProfileImgUrl: string): Promise<any | null> {
     try {
@@ -475,23 +473,6 @@ export class UsersService {
     } catch (error) {
       console.log('Error al obtener la informacion de envio:', error)
       throw error
-    }
-  }
-
-  async sendForgotPasswordEmail(email) {
-    try {
-      const user = await this.findOneByEmail(email)
-      if (!user) {
-        throw new Error('Usuario no encontrado')
-      }
-      console.log({ user })
-
-      await this.mailsService.sendPasswordReset(user)
-
-      return { success: true, message: 'Email de recuperación enviado con éxito' };
-    } catch (error) {
-      console.error('Error al enviar el correo de recueracion de contraseña:', error)
-      throw new Error('No se pudo enviar el correo de recuperación de contraseña')
     }
   }
 
