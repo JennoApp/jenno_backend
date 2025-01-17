@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, BadRequestException, InternalServerErrorException } from "@nestjs/common";
 import { ChatService } from './chat.service'
 import { conversationsDto } from './dto/conversations.dto'
 import { messageDto } from './dto/message.dto'
@@ -16,8 +16,17 @@ export class ChatController {
   }
 
   @Get('/conversations/:userId')
-  getConversation(@Param('userId') userId: string) {
-    return this.chatService.getConversations(userId)
+  async getConversation(@Param('userId') userId: string) {
+    if (!userId) {
+      throw new BadRequestException('El userId es obligatorio');
+    }
+
+    try {
+      return await this.chatService.getConversations(userId);
+    } catch (error) {
+      console.error('Error obteniendo conversaciones:', error);
+      throw new InternalServerErrorException('Error al obtener las conversaciones');
+    }
   }
 
 

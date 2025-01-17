@@ -49,14 +49,21 @@ export class ChatService {
 
   async getConversations(userId: string) {
     try {
+      if (!userId) {
+        throw new Error('El userId es obligatorio');
+      }
+
       const conversations = await this.conversationsModel.find({
         members: { $in: [userId] }
       })
 
-      const conversationsWithUnreadCount = conversations.map(conversation => ({
-        ...conversation.toObject(),
-        unreadCount: conversation.unreadCount[userId] || 0
-      }));
+      const conversationsWithUnreadCount = conversations.map(conversation => {
+        const unreadCount = conversation.unreadCount?.[userId] || 0
+        return {
+          ...conversation.toObject(),
+          unreadCount
+        }
+      });
 
       return {
         status: 200,
