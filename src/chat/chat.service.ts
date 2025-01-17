@@ -39,6 +39,7 @@ export class ChatService {
         conversationId: savedConversation._id
       }
     } catch (error) {
+      console.error('Error creating conversation:', error)
       return {
         status: 500,
         message: 'Error creating conversation',
@@ -70,7 +71,7 @@ export class ChatService {
         conversations: conversationsWithUnreadCount
       }
     } catch (err) {
-
+      console.error('Error retrieving conversations:', err)
       return {
         status: 500,
         err
@@ -92,9 +93,13 @@ export class ChatService {
       const conversation = await this.conversationsModel.findById(message.conversationId)
       if (conversation) {
         const otherMembers = conversation.members.filter(member => member !== message.sender)
+
+        const unreadCount = { ...conversation.unreadCount }
         otherMembers.forEach(member => {
           conversation.unreadCount[member] = (conversation.unreadCount[member] || 0) + 1
         });
+
+        conversation.unreadCount = unreadCount
         await conversation.save();
       }
 
@@ -107,7 +112,8 @@ export class ChatService {
       console.error('Error saving message:', error)
       return {
         status: 500,
-        message: 'An error occurred while saving the message.'
+        message: 'An error occurred while saving the message.',
+        error
       }
     }
   }
@@ -165,8 +171,12 @@ export class ChatService {
 
       // Resetear el contador de mensajes no leídos para el usuario
       const conversation = await this.conversationsModel.findById(conversationId);
+
       if (conversation) {
-        conversation.unreadCount[userId] = 0;
+        const unreadCount = { ...conversation.unreadCount }
+        unreadCount[userId] = 0;
+        conversation.unreadCount = unreadCount
+
         await conversation.save();
       }
 
@@ -183,7 +193,6 @@ export class ChatService {
       };
     }
   }
-
 
 }
 
