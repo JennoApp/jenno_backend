@@ -91,12 +91,14 @@ export class ChatService {
 
       // Incrementar el contador de mensajes no leídos para los otros miembros
       const conversation = await this.conversationsModel.findById(message.conversationId)
+
       if (conversation) {
         const otherMembers = conversation.members.filter(member => member !== message.sender)
 
-        const unreadCount = { ...conversation.unreadCount }
+        const unreadCount = conversation.unreadCount || new Map()
         otherMembers.forEach(member => {
-          conversation.unreadCount[member] = (conversation.unreadCount[member] || 0) + 1
+          const currentCount = unreadCount.get(member) || 0
+          unreadCount.set(member, currentCount + 1)
         });
 
         conversation.unreadCount = unreadCount

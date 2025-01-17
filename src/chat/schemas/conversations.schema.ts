@@ -8,7 +8,7 @@ export const ConversationsSchema = new Schema({
   unreadCount: {
     type: Map,
     of: Number,
-    default: {}
+    default: new Map(),
   }
 },
   {
