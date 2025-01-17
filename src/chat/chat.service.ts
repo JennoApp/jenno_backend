@@ -29,7 +29,8 @@ export class ChatService {
 
       // Crear una nueva conversacion si no existe
       const newConversation = new this.conversationsModel({
-        members: [senderId, receiverId]
+        members: [senderId, receiverId],
+        unreadCount: { [senderId]: 0, [receiverId]: 0 }
       })
       const savedConversation = await newConversation.save()
       return {
@@ -52,9 +53,14 @@ export class ChatService {
         members: { $in: [userId] }
       })
 
+      const conversationsWithUnreadCount = conversations.map(conversation => ({
+        ...conversation.toObject(),
+        unreadCount: conversation.unreadCount[userId] || 0
+      }));
+
       return {
         status: 200,
-        conversations
+        conversations: conversationsWithUnreadCount
       }
     } catch (err) {
 
@@ -67,10 +73,24 @@ export class ChatService {
 
   /////////// Messages /////////////
   async addMessage(message: messageDto) {
-    const newMessage = new this.messageModel(message)
+    const newMessage = new this.messageModel({
+      ...message,
+      isRead: false
+    })
 
     try {
       const savedMessage = await newMessage.save()
+
+      // Incrementar el contador de mensajes no leídos para los otros miembros
+      const conversation = await this.conversationsModel.findById(message.conversationId)
+      if (conversation) {
+        const otherMembers = conversation.members.filter(member => member !== message.sender)
+        otherMembers.forEach(member => {
+          conversation.unreadCount[member] = (conversation.unreadCount[member] || 0) + 1
+        });
+        await conversation.save();
+      }
+
       return {
         status: 200,
         message: 'Message saved successfully.',
@@ -127,6 +147,36 @@ export class ChatService {
       }
     }
   }
+
+  async markMessagesAsRead(conversationId: string, userId: string) {
+    try {
+      // Marcar los mensajes como leídos
+      await this.messageModel.updateMany(
+        { conversationId, isRead: false, sender: { $ne: userId } },
+        { $set: { isRead: true } }
+      );
+
+      // Resetear el contador de mensajes no leídos para el usuario
+      const conversation = await this.conversationsModel.findById(conversationId);
+      if (conversation) {
+        conversation.unreadCount[userId] = 0;
+        await conversation.save();
+      }
+
+      return {
+        status: 200,
+        message: 'Messages marked as read successfully.'
+      };
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+      return {
+        status: 500,
+        message: 'Error marking messages as read.',
+        error
+      };
+    }
+  }
+
 
 }
 
