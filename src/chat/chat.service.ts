@@ -59,7 +59,8 @@ export class ChatService {
       })
 
       const conversationsWithUnreadCount = conversations.map(conversation => {
-        const unreadCount = conversation.unreadCount?.[userId] || 0
+        const unreadCount = conversation.unreadCount?.get(userId) || 0
+
         return {
           ...conversation.toObject(),
           unreadCount
