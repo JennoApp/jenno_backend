@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Conversations } from './interfaces/Conversations'
@@ -165,6 +165,10 @@ export class ChatService {
   }
 
   async markMessagesAsRead(conversationId: string, userId: string) {
+    if (!conversationId || !userId) {
+      throw new BadRequestException('Both conversationId and userId are required');
+    }
+
     try {
       // Marcar los mensajes como leídos
       await this.messageModel.updateMany(
@@ -176,8 +180,8 @@ export class ChatService {
       const conversation = await this.conversationsModel.findById(conversationId);
 
       if (conversation) {
-        const unreadCount = { ...conversation.unreadCount }
-        unreadCount[userId] = 0;
+        const unreadCount = conversation.unreadCount || new Map<string, number>()
+        unreadCount.set(userId, 0)
         conversation.unreadCount = unreadCount
 
         await conversation.save();

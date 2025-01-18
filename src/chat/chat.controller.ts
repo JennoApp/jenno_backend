@@ -55,4 +55,12 @@ export class ChatController {
 
     return result
   }
+
+  @Post('/messages/markasread/:conversationId/:userId')
+  markMessagesAsRead(
+    @Param('conversationId') conversationId: string,
+    @Param('userId') userId: string
+  ) {
+    return this.chatService.markMessagesAsRead(conversationId, userId)
+  }
 }
