@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Conversations } from './interfaces/Conversations'
@@ -79,6 +79,24 @@ export class ChatService {
       }
     }
   }
+
+  async getUnreadConversationsCount(userId: string) {
+  try {
+    // Encuentra las conversaciones del usuario con mensajes no leídos
+    const conversations = await this.conversationsModel.find({
+      members: userId,
+      unreadCount: { $gt: 0 }, // Al menos un mensaje no leído
+    });
+
+    return {
+      unreadConversations: conversations.length
+    }
+  } catch (error) {
+    console.error('Error obteniendo el número de conversaciones no leídas:', error);
+    throw new InternalServerErrorException('Error al obtener el número de conversaciones no leídas');
+  }
+}
+
 
   /////////// Messages /////////////
   async addMessage(message: messageDto) {
