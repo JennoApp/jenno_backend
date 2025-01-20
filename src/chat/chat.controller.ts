@@ -31,7 +31,7 @@ export class ChatController {
 
   @Get('/conversations/unread/:userId')
   getUnreadConversationsCount(@Param('userId') userId: string) {
-    return this.getUnreadConversationsCount(userId)
+    return this.chatService.getUnreadConversationsCount(userId)
   }
 
 
