@@ -82,14 +82,20 @@ export class ChatService {
 
   async getUnreadConversationsCount(userId: string) {
   try {
-    // Encuentra las conversaciones del usuario con mensajes no leídos
+    // Encuentra las conversaciones
     const conversations = await this.conversationsModel.find({
       members: userId,
-      unreadCount: { $gt: 0 }, // Al menos un mensaje no leído
     });
 
+    // Filtra las conversaciones donde el unreadCount del usuario sea mayor que 0
+    const unreadConversations = conversations.filter(conversation => {
+      const unreadCount = conversation.unreadCount.get(userId) || 0;
+      return unreadCount > 0;
+    });
+
+
     return {
-      unreadConversations: conversations.length
+      unreadConversations: unreadConversations.length
     }
   } catch (error) {
     console.error('Error obteniendo el número de conversaciones no leídas:', error);
