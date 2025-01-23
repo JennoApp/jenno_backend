@@ -210,4 +210,14 @@ export class UsersController {
       throw new InternalServerErrorException('Error al obtener el conteo de notificaciones no leídas.');
     }
   }
+
+  @Post('notifications/markasread/:userId')
+  async markNotificationsAsRead(@Param('userId') userId: string) {
+    if (!userId) {
+      throw new BadRequestException('userId is required');
+    }
+
+    const result = await this.usersService.markNotificationsAsRead(userId);
+    return result;
+  }
 }

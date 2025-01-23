@@ -510,4 +510,42 @@ export class UsersService {
       account: user.paypalAccount
     }
   }
+
+
+  // Marcar las notificaciones como leidas
+  async markNotificationsAsRead(userId: string) {
+    if (!userId) {
+      throw new BadRequestException('UserId is required')
+    }
+
+    try {
+      const user = await this.userModel.findById(userId)
+
+      if (!user || !Array.isArray(user.notifications)) {
+        throw new BadRequestException('Usuario no encontrado o no tiene notificaciones');
+      }
+
+      // Actualizamos las notificaciones
+      const result = await this.userModel.updateOne(
+        { _id: userId, 'notifications.read': false },
+        { $set: { 'notifications.$[].read': true } }
+      )
+
+      if (result.modifiedCount === 0) {
+        throw new BadRequestException('No se encontraron notificaciones no leídas para marcar')
+      }
+
+      return {
+        status: 200,
+        message: 'Notificaciones marcadas como leídas correctamente.',
+      };
+    } catch (error) {
+      console.error('Error al marcar las notificaciones como leídas:', error);
+      return {
+        status: 500,
+        message: 'Error al marcar las notificaciones como leídas.',
+        error,
+      };
+    }
+  }
 }
