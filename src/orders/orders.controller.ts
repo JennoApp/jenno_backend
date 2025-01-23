@@ -82,7 +82,7 @@ export class OrdersController {
 
       userSeller.notifications.unshift({
         type: 'order',
-        message: `Nueva orden creada por ${order.buyerName}`,
+        message: `Tienes una nueva venta de ${order.buyerName}.`,
         orderId: orderId,
         createdAt: new Date(),
         read: false,
