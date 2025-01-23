@@ -12,5 +12,6 @@ export interface User extends Document {
   orders: [],
   shopping: [],
   walletId: string
-  paypalAccount: string
+  paypalAccount: string,
+  notifications: []
 }

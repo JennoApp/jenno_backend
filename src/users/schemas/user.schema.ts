@@ -94,5 +94,24 @@ export const UserSchema = new Schema({
   createAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  // Notifications
+  notifications: [
+    {
+      type: String,
+      message: String,
+      orderId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Order'
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+      read: {
+        type: Boolean,
+        default: false
+      }
+    }
+  ]
 })

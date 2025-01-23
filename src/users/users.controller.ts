@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete, UseInterceptors, UploadedFile, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Express } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AwsService } from 'src/aws/aws.service';
+import { PaginatedDto } from './dto/paginated.dto';
 
 
 
@@ -59,7 +60,7 @@ export class UsersController {
     return this.usersService.getShoppingWithoutReview(userid, page, limit)
   }
 
-   @Get('/shoppingcompleted/:id')
+  @Get('/shoppingcompleted/:id')
   getShoppingCompleted(@Param('id') id, @Query('page') page: number, @Query('limit') limit: number) {
     return this.usersService.getShoppingCompleted(id, page, limit)
   }
@@ -156,4 +157,58 @@ export class UsersController {
 
     return this.usersService.getPaypalAccount(userid)
   }
+
+  @Get('notifications/:userId')
+  async getNotifications(
+    @Param('userId') userId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    try {
+      const user = await this.usersService.getUser(userId);
+      if (!user || !Array.isArray(user.notifications)) {
+        throw new BadRequestException('Usuario no encontrado o no tiene notificaciones.');
+      }
+
+      // Ordenar notificaciones por fecha (descendente)
+      const sortedNotifications = user.notifications.sort(
+        (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+
+      // Contar el total de notificaciones
+      const totalNotifications = sortedNotifications.length;
+
+      // Paginación
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
+      const paginatedNotifications = sortedNotifications.slice(startIndex, endIndex);
+
+      // Retornar el resultado en la estructura PaginatedDto
+      return new PaginatedDto(paginatedNotifications, page, limit, totalNotifications);
+    } catch (error) {
+      console.error('Error al obtener las notificaciones:', error);
+      throw new InternalServerErrorException('Error al obtener las notificaciones.');
+    }
+  }
+
+  @Get('notifications/count/:userId')
+  async getUnreadNotificationCount(@Param('userId') userId: string) {
+    try {
+      const user = await this.usersService.getUser(userId);
+      if (!user || !Array.isArray(user.notifications)) {
+        throw new BadRequestException('Usuario no encontrado o no tiene notificaciones.');
+      }
+
+      // Contar notificaciones no leídas
+      const unreadCount = user.notifications.filter((notification: any) => !notification.read).length;
+
+      return {
+        unread: unreadCount,
+      };
+    } catch (error) {
+      console.error('Error al obtener el conteo de notificaciones no leídas:', error);
+      throw new InternalServerErrorException('Error al obtener el conteo de notificaciones no leídas.');
+    }
+  }
+
 }

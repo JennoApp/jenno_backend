@@ -47,7 +47,7 @@ export class OrdersService {
     await this.autoCompleteOrder.add(
       'completeOrder',
       { orderId: savedOrder._id },
-      { delay: 24 * 60 * 60 * 1000 }
+      { delay: 3 * 24 * 60 * 60 * 1000 }
     )
 
     console.log(`job added to queue for orderId: ${savedOrder._id}`)

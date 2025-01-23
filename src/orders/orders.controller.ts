@@ -67,6 +67,21 @@ export class OrdersController {
         throw new BadRequestException('Usuario vendedor inválido');
       }
       userSeller.orders.push(saveOrder._id)
+
+      // Crear notificacion para el vendedor
+      if (!Array.isArray(userSeller.notifications)) {
+        userSeller.notifications = [];
+      }
+
+      userSeller.notifications.unshift({
+        type: 'order',
+        message: `Nueva orden creada por ${order.buyerName}`,
+        orderId: saveOrder._id,
+        createdAt: new Date(),
+        read: false,
+      });
+
+
       await userSeller.save()
 
       // Actualizar producto
@@ -82,6 +97,19 @@ export class OrdersController {
         throw new BadRequestException('Usuario comprador inválido');
       }
       userBuyer.shopping.push(saveOrder._id)
+
+      // Crear la notificación para el comprador
+      if (!Array.isArray(userBuyer.notifications)) {
+        userBuyer.notifications = [];
+      }
+      userBuyer.notifications.unshift({
+        type: 'order',
+        message: `Tu compra del producto "${product?.productname}" se ha realizado con éxito.`,
+        orderId: saveOrder._id,
+        createdAt: new Date(),
+        read: false,
+      });
+
       await userBuyer.save()
 
       return {
