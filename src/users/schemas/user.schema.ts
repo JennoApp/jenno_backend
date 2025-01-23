@@ -98,8 +98,8 @@ export const UserSchema = new Schema({
   // Notifications
   notifications: [
     {
-      type: String,
-      message: String,
+      type: { type: String, required: true },
+      message: { type: String, required: true },
       orderId: {
         type: Schema.Types.ObjectId,
         ref: 'Order'

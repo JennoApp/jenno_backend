@@ -4,6 +4,7 @@ import { OrdersService } from './orders.service'
 import { UsersService } from '../users/users.service'
 import { ProductsService } from "src/products/products.service";
 import { OrderDto } from "./dto/order.dto";
+import mongoose from 'mongoose';
 
 
 
@@ -57,8 +58,14 @@ export class OrdersController {
         selectedOptions: order.selectedOptions
       }
 
-      const saveOrder = await this.ordersService.createOrder(newOrder)
+      const saveOrder: any = await this.ordersService.createOrder(newOrder)
       console.log('Orden creada con exito:', saveOrder)
+
+      // Validar el ObjectId
+      const orderId = mongoose.Types.ObjectId.isValid(saveOrder._id)
+        ? saveOrder._id
+        : new mongoose.Types.ObjectId(saveOrder._id)
+
 
       // Actualizar vendedor
       // guarda Id de Orden en usuario que vende
@@ -66,7 +73,7 @@ export class OrdersController {
       if (!userSeller || !Array.isArray(userSeller.orders)) {
         throw new BadRequestException('Usuario vendedor inválido');
       }
-      userSeller.orders.push(saveOrder._id)
+      userSeller.orders.push(orderId)
 
       // Crear notificacion para el vendedor
       if (!Array.isArray(userSeller.notifications)) {
@@ -76,7 +83,7 @@ export class OrdersController {
       userSeller.notifications.unshift({
         type: 'order',
         message: `Nueva orden creada por ${order.buyerName}`,
-        orderId: saveOrder._id,
+        orderId: orderId,
         createdAt: new Date(),
         read: false,
       });
@@ -96,7 +103,7 @@ export class OrdersController {
       if (!userBuyer || !Array.isArray(userBuyer.shopping)) {
         throw new BadRequestException('Usuario comprador inválido');
       }
-      userBuyer.shopping.push(saveOrder._id)
+      userBuyer.shopping.push(orderId)
 
       // Crear la notificación para el comprador
       if (!Array.isArray(userBuyer.notifications)) {
@@ -105,7 +112,7 @@ export class OrdersController {
       userBuyer.notifications.unshift({
         type: 'order',
         message: `Tu compra del producto "${product?.productname}" se ha realizado con éxito.`,
-        orderId: saveOrder._id,
+        orderId: orderId,
         createdAt: new Date(),
         read: false,
       });

@@ -210,5 +210,4 @@ export class UsersController {
       throw new InternalServerErrorException('Error al obtener el conteo de notificaciones no leídas.');
     }
   }
-
 }
