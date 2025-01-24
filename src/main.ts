@@ -66,7 +66,7 @@ async function bootstrap() {
     origin: (origin, callback) => {
       const allowedOrigins = [
         'https://jenno-client.vercel.app',
-        'https://jenno.com.co',
+        'https://www.jenno.com.co',
         'redis://default:XwKGfXdDVpIKSwAJrKnnuRGFseSpKhsc@redis-production-af4e.up.railway.app:6379'
       ]
 
