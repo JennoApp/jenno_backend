@@ -178,11 +178,14 @@ export class ProductsService {
 
   async getRandomCategories(limit: number) {
     try {
-      return await this.productModel.aggregate([
+      const randomCategories = await this.productModel.aggregate([
         { $match: { category: { $exists: true, $ne: null } } },
+        { $group: { _id: "$category" } },
         { $sample: { size: limit } },
-        { $project: { _id: 0, category: "$category" } }
+        { $project: { _id: 0, category: "$_id" } }
       ]).exec();
+
+      return randomCategories.map(item => item.category)
     } catch (error) {
       throw new BadRequestException(`Error al obtener categorías: ${error.message}`);
     }
