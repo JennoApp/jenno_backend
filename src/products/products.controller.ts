@@ -114,7 +114,8 @@ export class ProductsController {
 
       return {
         msg: 'Product updated',
-        user: req.user.userId
+        user: req.user.userId,
+        productId: product.productId
       }
 
     } else {
@@ -158,7 +159,8 @@ export class ProductsController {
 
       return {
         msg: 'Product created & add to user products list',
-        user: req.user.userId
+        user: req.user.userId,
+        productId: saveProduct._id
       }
     }
   }
