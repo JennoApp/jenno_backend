@@ -129,9 +129,9 @@ export class UsersController {
 
 
   @UseGuards(JwtAuthGuard)
-  @Post('/following/:id')
-  following(@Param('id') id: string, @Request() req) {
-    return this.usersService.following(id, req?.user?.userId)
+  @Post('following/:customerid')
+  following(@Param('customerid') customerid: string, @Request() req) {
+    return this.usersService.following(customerid, req?.user?.userId)
   }
 
   @Put('/shipping/:id')
