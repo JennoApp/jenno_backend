@@ -353,7 +353,7 @@ export class UsersService {
 
   async getShopping(id: string, page: number, limit: number) {
     try {
-      const userWithOrders = await this.userModel
+      const shoppingOrders = await this.userModel
         .findById(id)
         .populate({
           path: 'shopping',
@@ -366,16 +366,19 @@ export class UsersService {
         })
         .exec();
 
-      if (!userWithOrders) {
+      if (!shoppingOrders) {
         throw new NotFoundException('User not Found');
       }
 
-      const shoppingIds = userWithOrders.shopping.map((order: { _id: string }) => order?._id);
-      const shoppingCount = shoppingIds.length;
+      const totalShoppingCount = await this.userModel
+        .findById(id)
+        .countDocuments({ 'shopping.status': { $ne: 'completed' } });
 
-      console.log({ shoppingIds, page, limit, shoppingCount });
+      const shoppingIds = shoppingOrders.shopping.map((order: { _id: string }) => order?._id);
 
-      return new PaginatedDto(shoppingIds, page, limit, shoppingCount);
+      console.log({ shoppingIds, page, limit, totalShoppingCount });
+
+      return new PaginatedDto(shoppingIds, page, limit, totalShoppingCount);
     } catch (error) {
       console.error('Error to get Shopping List:', error);
       throw new InternalServerErrorException('Failed to get Shopping List');
