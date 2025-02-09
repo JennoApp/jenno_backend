@@ -372,7 +372,11 @@ export class UsersService {
 
       const totalShoppingCount = await this.userModel
         .findById(id)
-        .countDocuments({ 'shopping.status': { $ne: 'completed' } });
+        .populate({
+          path: 'shopping',
+          match: { status: { $ne: 'completed' } },
+        })
+        .countDocuments({ status: { $ne: 'completed' } });
 
       const shoppingIds = shoppingOrders.shopping.map((order: { _id: string }) => order?._id);
 
