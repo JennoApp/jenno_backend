@@ -375,6 +375,7 @@ export class UsersService {
         .populate({
           path: 'shopping',
           match: { status: { $ne: 'completed' } },
+          select: '_id status createdAt',
         })
         .countDocuments({ status: { $ne: 'completed' } });
 
