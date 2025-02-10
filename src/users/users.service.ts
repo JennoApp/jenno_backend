@@ -428,14 +428,15 @@ export class UsersService {
 
       const shoppingOrdersIds = shoppingOrdersWithReviews.shopping.map((order: { _id: string }) => order?._id);
 
-      const salesOrdersCompletedCount = await this.userModel
+      const shoppingOrdersCompletedCount = await this.userModel
         .findById(id)
         .populate({
           path: 'shopping',
           match: { status: 'completed' },
           select: '_id status createdAt',
         })
-      const shoppingOrdersCount = salesOrdersCompletedCount?.orders.length
+
+      const shoppingOrdersCount = shoppingOrdersCompletedCount?.shopping.length
 
       return new PaginatedDto(shoppingOrdersIds, page, limit, shoppingOrdersCount)
     } catch (error) {
@@ -475,7 +476,7 @@ export class UsersService {
           match: { status: 'completed' },
           select: '_id status createdAt',
         })
-      const shoppingOrdersCount = shoppingOrdersCompletedCount?.orders.length
+      const shoppingOrdersCount = shoppingOrdersCompletedCount?.shopping.length
 
 
       console.log({ completedOrderIds, page, limit, shoppingOrdersCount });
