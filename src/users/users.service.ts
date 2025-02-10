@@ -351,7 +351,7 @@ export class UsersService {
         .findById(id)
         .populate({
           path: 'orders',
-          match: { status: { $ne: 'completed' } },
+          match: { status: 'completed' },
           select: '_id status createdAt',
         })
       const ordersCount = salesOrdersCompletedCount?.orders.length
