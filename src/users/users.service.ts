@@ -380,7 +380,9 @@ export class UsersService {
 
       const shoppingIds = shoppingOrders.shopping.map((order: { _id: string }) => order?._id);
 
-      console.log({ shoppingIds, page, limit, totalShoppingCount });
+      const count = totalShoppingCount?.shopping.length
+
+      console.log({ shoppingIds, page, limit, count });
 
       return new PaginatedDto(shoppingIds, page, limit, totalShoppingCount);
     } catch (error) {
