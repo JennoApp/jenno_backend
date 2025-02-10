@@ -377,7 +377,6 @@ export class UsersService {
           match: { status: { $ne: 'completed' } },
           select: '_id status createdAt',
         })
-        .countDocuments({ status: { $ne: 'completed' } });
 
       const shoppingIds = shoppingOrders.shopping.map((order: { _id: string }) => order?._id);
 
@@ -385,7 +384,7 @@ export class UsersService {
 
       console.log({ shoppingIds, page, limit, count });
 
-      return new PaginatedDto(shoppingIds, page, limit, totalShoppingCount);
+      return new PaginatedDto(shoppingIds, page, limit, count);
     } catch (error) {
       console.error('Error to get Shopping List:', error);
       throw new InternalServerErrorException('Failed to get Shopping List');
