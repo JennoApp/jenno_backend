@@ -287,7 +287,7 @@ export class UsersService {
 
   async getOrders(userId: string, page: number, limit: number) {
     try {
-      const user = await this.userModel
+      const salesOrders = await this.userModel
         .findById(userId)
         .populate({
           path: 'orders',
@@ -300,13 +300,21 @@ export class UsersService {
         })
         .exec()
 
-      if (!user) {
+      if (!salesOrders) {
         throw new NotFoundException('User not Found')
       }
 
-      const orderList = user.orders.map((order: { _id: string }) => order?._id)
+      const salesOrdersCount = await this.userModel
+        .findById(userId)
+        .populate({
+          path: 'shopping',
+          match: { status: { $ne: 'completed' } },
+          select: '_id status createdAt',
+        })
+      const ordersCount = salesOrdersCount?.orders.length
 
-      const ordersCount = orderList.length
+      const orderList = salesOrders.orders.map((order: { _id: string }) => order?._id)
+
 
       console.log({ orderList, page, limit, ordersCount })
 
