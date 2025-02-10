@@ -408,7 +408,7 @@ export class UsersService {
 
   async getShoppingWithoutReview(id, page: number, limit: number) {
     try {
-      const userWithReviews = await this.userModel
+      const shoppingOrdersWithReviews = await this.userModel
         .findById(id)
         .populate({
           path: 'shopping',
@@ -422,26 +422,22 @@ export class UsersService {
         })
         .exec()
 
-      if (!userWithReviews) {
+      if (!shoppingOrdersWithReviews) {
         throw new NotFoundException('User not Found')
       }
 
-      // filtrar los productos que no tienen review del usuario
-      const shoppingWithoutReview = userWithReviews.shopping
-        .filter((product: any) => {
-          return (
-            !product.reviews ||
-            product.reviews.length === 0 ||
-            !product.reviews.some((review: any) => review.user.toString() === id)
-          )
+      const shoppingOrdersIds = shoppingOrdersWithReviews.shopping.map((order: { _id: string }) => order?._id);
+
+      const salesOrdersCompletedCount = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'shopping',
+          match: { status: 'completed' },
+          select: '_id status createdAt',
         })
-        .map((product: any) => product._id)
+      const shoppingOrdersCount = salesOrdersCompletedCount?.orders.length
 
-      const shoppingCount = shoppingWithoutReview.length
-
-      console.log({ shoppingWithoutReview })
-
-      return new PaginatedDto(shoppingWithoutReview, page, limit, shoppingCount)
+      return new PaginatedDto(shoppingOrdersIds, page, limit, shoppingOrdersCount)
     } catch (error) {
       console.error('Error retrieving shopping without review:', error)
       throw new InternalServerErrorException('Failed to retrieve shopping without review')
@@ -451,7 +447,7 @@ export class UsersService {
   async getShoppingCompleted(id: string, page: number, limit: number) {
     try {
       // Obtener el usuario con las órdenes completadas
-      const userWithCompletedOrders = await this.userModel
+      const shoppingOrdersCompletedOrders = await this.userModel
         .findById(id)
         .populate({
           path: 'shopping',
@@ -465,17 +461,26 @@ export class UsersService {
         })
         .exec();
 
-      if (!userWithCompletedOrders) {
+      if (!shoppingOrdersCompletedOrders) {
         throw new NotFoundException('User not found');
       }
 
       // Obtener los IDs de las órdenes completadas
-      const completedOrderIds = userWithCompletedOrders.shopping.map((order: { _id: string }) => order._id);
-      const ordersCount = completedOrderIds.length;
+      const completedOrderIds = shoppingOrdersCompletedOrders.shopping.map((order: { _id: string }) => order._id);
 
-      console.log({ completedOrderIds, page, limit, ordersCount });
+       const shoppingOrdersCompletedCount = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'shopping',
+          match: { status: 'completed' },
+          select: '_id status createdAt',
+        })
+      const shoppingOrdersCount = shoppingOrdersCompletedCount?.orders.length
 
-      return new PaginatedDto(completedOrderIds, page, limit, ordersCount);
+
+      console.log({ completedOrderIds, page, limit, shoppingOrdersCount });
+
+      return new PaginatedDto(completedOrderIds, page, limit, shoppingOrdersCount);
     } catch (error) {
       console.error('Error retrieving completed shopping orders:', error);
       throw new InternalServerErrorException('Failed to retrieve completed shopping orders');
