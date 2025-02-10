@@ -327,7 +327,7 @@ export class UsersService {
 
   async getOrdersCompleted(id: string, page: number, limit: number) {
     try {
-      const userWithOrders = await this.userModel
+      const salesOrdersCompleted = await this.userModel
         .findById(id)
         .populate({
           path: 'orders',
@@ -341,15 +341,22 @@ export class UsersService {
         })
         .exec();
 
-      if (!userWithOrders) {
+      if (!salesOrdersCompleted) {
         throw new NotFoundException('User not Found');
       }
 
-      const orderIds = userWithOrders.orders.map((order: { _id: string }) => order?._id);
+      const orderIds = salesOrdersCompleted.orders.map((order: { _id: string }) => order?._id);
 
-      const ordersCount = orderIds.length;
+      const salesOrdersCompletedCount = await this.userModel
+        .findById(id)
+        .populate({
+          path: 'orders',
+          match: { status: { $ne: 'completed' } },
+          select: '_id status createdAt',
+        })
+      const ordersCount = salesOrdersCompletedCount?.orders.length
 
-      console.log({ orderIds });
+      console.log({ orderIds, page, limit, ordersCount })
 
       return new PaginatedDto(orderIds, page, limit, ordersCount);
     } catch (error) {
