@@ -262,8 +262,10 @@ export class UsersService {
     return new PaginatedDto(followers, page, limit, followersCount)
   }
 
-  async updateShippingInfo(userId, info: { country, address, city, state, postalCode, phoneNumber }) {
+  async updateShippingInfo(userId, info: { completeName, document, country, address, city, state, postalCode, phoneNumber }) {
     const shippingInfo = {
+      completeName: info.completeName,
+      document: info.document,
       country: info.country,
       address: info.address,
       city: info.city,

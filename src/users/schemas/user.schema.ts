@@ -49,6 +49,8 @@ export const UserSchema = new Schema({
   }],
   // Shipping info
   shippingInfo: {
+    completeName: String,
+    document: Number,
     country: String,
     address: String,
     city:  String,
