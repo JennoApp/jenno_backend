@@ -67,7 +67,7 @@ async function bootstrap() {
       const allowedOrigins = [
         'https://jenno-client.vercel.app',
         'https://www.jenno.com.co',
-        'redis://default:XwKGfXdDVpIKSwAJrKnnuRGFseSpKhsc@redis-production-af4e.up.railway.app:6379'
+        'redis://default:AUVPAAIjcDEzYzkxNjY1YjkyMTM0OGU3OTE4ZDQ0Yzc4MDFkZjlhZHAxMA@wondrous-leopard-17743.upstash.io:6379'
       ]
 
       if (!origin || allowedOrigins.includes(origin)) {
