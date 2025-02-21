@@ -42,6 +42,9 @@ import { BullModule } from '@nestjs/bullmq'
 
           return delay
         },
+        tls: {
+          rejectUnauthorized: false
+        }
       },
 
       defaultJobOptions: {
