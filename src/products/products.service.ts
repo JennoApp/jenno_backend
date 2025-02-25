@@ -75,6 +75,31 @@ export class ProductsService {
     return await this.productModel.findById(id)
   }
 
+
+  async getProductsByCategory(category: string, page: number, limit: number, country?: string) {
+    const query: any = {
+      category: category,
+      visibility: true
+    }
+
+    if (country) {
+      query.country = { $in: [country] }
+    }
+
+    const itemsCount = await this.productModel.countDocuments(query);
+
+    const products = await this.productModel
+      .aggregate([
+        { $match: query },
+        { $sample: { size: Math.min(Number(limit), itemsCount) } },
+        { $skip: (page - 1) * Number(limit) },
+        { $limit: Number(limit) }
+      ])
+      .exec();
+
+    return new PaginatedDto(products, page, limit, itemsCount);
+  }
+
   // return all products for single user
   async getProductsbyUser(userId: string, page: number, limit: number, country?: string) {
     const idCast = new mongoose.Types.ObjectId(userId)

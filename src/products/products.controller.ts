@@ -34,6 +34,11 @@ export class ProductsController {
     return this.productsService.getProduct(id)
   }
 
+  @Get('/category/:category')
+  getProductsByCategory(@Param('category') category: string, @Query('page') page: number, @Query('limit') limit: number, @Query('country') country: string) {
+  
+  }
+
   @Get('/user/:userId')
   getProductsbyUser(@Param('userId') userId, @Query('page') page: number, @Query('limit') limit: number, @Query('country') country: string) {
     return this.productsService.getProductsbyUser(userId, page, limit, country)
