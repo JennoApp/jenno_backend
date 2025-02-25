@@ -91,7 +91,8 @@ export class ProductsService {
     const products = await this.productModel
       .aggregate([
         { $match: query },
-        { $sample: { size: Math.min(Number(limit), itemsCount) } },
+        { $addFields: { randField: { $rand: {} } } },
+        { $sort: { randField: 1 } },
         { $skip: (page - 1) * Number(limit) },
         { $limit: Number(limit) }
       ])
