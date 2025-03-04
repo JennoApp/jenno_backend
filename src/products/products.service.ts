@@ -162,7 +162,7 @@ export class ProductsService {
       const products = await this.productModel
         .aggregate([
           { $match: { user: idCast, visibility: true } },
-          { $sample: { size: 4 } }
+          { $sample: { size: 8 } }
         ])
         .exec()
 
