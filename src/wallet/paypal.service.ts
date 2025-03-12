@@ -1,4 +1,5 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common'
+import { Injectable, HttpException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 
 
 @Injectable()
@@ -7,10 +8,10 @@ export class PaypalService {
   private clientSecret: string
   private apiUrl: string
 
-  constructor() {
-    this.clientId = "AQc0Px63WS02JpsJp3hmK6SV4tYsMgRNc-tUBz6ypAoOq_T8AO27wZTNHNsykRkcMhfmOqVNhtTCE9XR"
-    this.clientSecret = "EO2xhEJEBGxTUdAkA1Jkkvz5Obbg2lP5S6gZi31F_hJGLtfbUmJAOGRv-tnRayu406kBNWz66WxzOMt9"
-    this.apiUrl = "https://api-m.sandbox.paypal.com"
+  constructor(private configService: ConfigService) {
+    this.clientId = this.configService.get<string>('PAYPAL_CLIENT_ID')
+    this.clientSecret = this.configService.get<string>('PAYPAL_CLIENT_SECRET')
+    this.apiUrl = this.configService.get<string>('PAYPAL_API_URL')
   }
 
   // Funcion para obtener el token de acceso

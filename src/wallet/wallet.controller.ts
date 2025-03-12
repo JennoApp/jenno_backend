@@ -9,7 +9,7 @@ export class WalletControler {
   constructor(
     private walletService: WalletService,
     private paypalService: PaypalService
-  ) {}
+  ) { }
 
   @Get(':walletId')
   getWalletById(@Param('walletId') walletId) {
@@ -18,7 +18,7 @@ export class WalletControler {
 
   @Post(':userid')
   createWallet(@Param('userid') userid, @Body() wallet) {
-    return  this.walletService.createWallet(userid, wallet)
+    return this.walletService.createWallet(userid, wallet)
   }
 
   @Get('getwithdrawals/:walletId')
@@ -33,7 +33,7 @@ export class WalletControler {
 
   @UseGuards(JwtAuthGuard)
   @Post('withdraw/:paypalAccount')
-  async withdrawFunds(@Param('paypalAccount') paypalAccount,@Req() req, @Body() body: { amount: number, amountUsd: number }) {
+  async withdrawFunds(@Param('paypalAccount') paypalAccount, @Req() req, @Body() body: { amount: number, amountUsd: number }) {
     const user = req.user
     const amount = body.amount        // monto en pesos colombianos
     const amountUsd = body.amountUsd  // monto en dolares
