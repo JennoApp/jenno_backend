@@ -34,6 +34,8 @@ export class WalletControler {
   @UseGuards(JwtAuthGuard)
   @Post('withdraw/:paypalAccount')
   async withdrawFunds(@Param('paypalAccount') paypalAccount, @Req() req, @Body() body: { amount: number, amountUsd: number }) {
+    console.log('Headers:', req.headers);
+
     const user = req.user
     const amount = body.amount        // monto en pesos colombianos
     const amountUsd = body.amountUsd  // monto en dolares
