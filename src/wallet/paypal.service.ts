@@ -16,7 +16,15 @@ export class PaypalService {
 
   // Funcion para obtener el token de acceso
   private async getPaypalAccessToken() {
+    if (!this.clientId || !this.clientSecret || !this.apiUrl) {
+      throw new Error('Faltan credenciales de PayPal o la URL de la API');
+    }
+
     const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64')
+    console.log('Auth:', auth)
+
+    const params = new URLSearchParams();
+    params.append('grant_type', 'client_credentials');
 
     const response = await fetch(`${this.apiUrl}/v1/oauth2/token`, {
       method: 'POST',
@@ -25,7 +33,7 @@ export class PaypalService {
         'Authorization': `Basic ${auth}`
       },
 
-      body: 'grant_type=client_credentials'
+      body: params.toString()
     })
 
     const data = await response.json()
