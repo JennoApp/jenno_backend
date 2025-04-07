@@ -41,6 +41,8 @@ export class PaypalService {
       throw new HttpException(data, response.status)
     }
 
+    console.log('Access Token:', data.access_token)
+
     return data.access_token
   }
 
