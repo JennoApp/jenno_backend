@@ -16,11 +16,6 @@ export class WalletControler {
     return this.walletService.getWalletById(walletId)
   }
 
-  @Post(':userid')
-  createWallet(@Param('userid') userid, @Body() wallet) {
-    return this.walletService.createWallet(userid, wallet)
-  }
-
   @Get('getwithdrawals/:walletId')
   getWithdrawalbyId(@Param('walletId') walletId) {
     return this.walletService.getWithdrawalbyId(walletId)
@@ -29,6 +24,17 @@ export class WalletControler {
   @Get('getPaypalPayoutDetails/:batchId')
   getPaypalPayoutDetails(@Param('batchId') batchId) {
     return this.paypalService.getPaypalDetails(batchId)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getwithdrawalBalances/:userId')
+  getWithdrawalBalances(@Param('userId') userId: string) {
+    return this.walletService.getWithdrawalBalances(userId);
+  }
+
+  @Post(':userid')
+  createWallet(@Param('userid') userid, @Body() wallet) {
+    return this.walletService.createWallet(userid, wallet)
   }
 
   @UseGuards(JwtAuthGuard)

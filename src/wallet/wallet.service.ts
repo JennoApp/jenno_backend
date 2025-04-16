@@ -104,8 +104,8 @@ export class WalletService {
       status: 'completed'
     }
 
-    wallet.transactionHistory.push(withdrawalEntry)
-    wallet.withdrawals.unshift({payoutBatchId})
+    // wallet.transactionHistory.push(withdrawalEntry)
+    // wallet.withdrawals.unshift({payoutBatchId})
     await wallet.save()
 
     console.log(`Updated withdrawal history for userId: ${userId} with amount: ${amount} COP and ${amountUsd} USD`)
@@ -121,5 +121,19 @@ export class WalletService {
     await wallet.save();
 
     console.log(`Reduced balance for userId: ${userId} by amount: ${amount}`);
+  }
+
+
+  ////////////////
+  async getWithdrawalBalances(userId: string) {
+    const wallet = await this.walletModel.findOne({ userId}).lean()
+    if (!wallet) {
+      throw new NotFoundException(`Wallet not found for userId: ${userId}`)
+    }
+
+    return {
+      withdrawalPendingBalance: wallet.withdrawalPendingBalance,
+      withdrawalTotalBalance: wallet.withdrawalTotalBalance
+    }
   }
 }
