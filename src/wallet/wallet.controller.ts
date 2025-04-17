@@ -11,9 +11,15 @@ export class WalletControler {
     private paypalService: PaypalService
   ) { }
 
-  @Get(':walletId')
-  getWalletById(@Param('walletId') walletId) {
-    return this.walletService.getWalletById(walletId)
+  @UseGuards(JwtAuthGuard)
+  @Get('getwithdrawalBalances')
+  getWithdrawalBalances(@Req() req) {
+    const userId = req.user['userId'];
+    if (!userId) {
+      throw new HttpException('User not authenticated', 401)
+    }
+
+    return this.walletService.getWithdrawalBalances(userId);
   }
 
   @Get('getwithdrawals/:walletId')
@@ -26,15 +32,9 @@ export class WalletControler {
     return this.paypalService.getPaypalDetails(batchId)
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('getwithdrawalBalances')
-  getWithdrawalBalances(@Req() req) {
-    const userId = req.user['userId'];
-    if (!userId) {
-      throw new HttpException('User not authenticated', 401)
-    }
-
-    return this.walletService.getWithdrawalBalances(userId);
+  @Get(':walletId')
+  getWalletById(@Param('walletId') walletId) {
+    return this.walletService.getWalletById(walletId)
   }
 
   @Post(':userid')
