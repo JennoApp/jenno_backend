@@ -27,8 +27,13 @@ export class WalletControler {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('getwithdrawalBalances/:userId')
-  getWithdrawalBalances(@Param('userId') userId: string) {
+  @Get('getwithdrawalBalances')
+  getWithdrawalBalances(@Req() req) {
+    const userId = req.user['userId'];
+    if (!userId) {
+      throw new HttpException('User not authenticated', 401)
+    }
+
     return this.walletService.getWithdrawalBalances(userId);
   }
 
