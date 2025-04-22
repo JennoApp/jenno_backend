@@ -78,7 +78,7 @@ export class WalletControler {
 
   // Crear nueva cuenta bancaria (Nequi o Bancolombia)
   @UseGuards(JwtAuthGuard)
-  @Post('bankAccounts')
+  @Post('bankAccounts/create')
   async addBankAccount(@Req() req, @Body() dto: BankAccountDto) {
     const userId = req.user['userId'];
     if (!userId) {
@@ -89,7 +89,7 @@ export class WalletControler {
 
   // Actualizar cuenta bancaria existente
   @UseGuards(JwtAuthGuard)
-  @Patch('bankAccounts/:accountId')
+  @Patch('bankAccounts/update/:accountId')
   async updateBankAccount(
     @Req() req,
     @Param('accountId') accountId: string,
@@ -104,7 +104,7 @@ export class WalletControler {
 
   // Eliminar cuenta bancaria
   @UseGuards(JwtAuthGuard)
-  @Delete('bankAccounts/:accountId')
+  @Delete('bankAccounts/delete/:accountId')
   async deleteBankAccount(
     @Req() req,
     @Param('accountId') accountId: string
