@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { PaginatedDto } from './dto/paginated.dto';
 import { WalletService } from '../wallet/wallet.service'
 import { AwsService } from 'src/aws/aws.service';
+import { BankAccountDto } from '../wallet/dto/bankaccount.dto';
 
 
 @Injectable()

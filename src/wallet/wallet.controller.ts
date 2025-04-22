@@ -1,7 +1,8 @@
-import { Body, Controller, Param, Post, Get, Req, UseGuards, HttpException } from "@nestjs/common";
+import { Body, Controller, Param, Post, Get, Req, UseGuards, HttpException, Patch, Delete } from "@nestjs/common";
 import { WalletService } from './wallet.service'
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { PaypalService } from "./paypal.service";
+import { BankAccountDto } from "./dto/bankaccount.dto";
 
 
 @Controller('wallet')
@@ -73,5 +74,45 @@ export class WalletControler {
       message: 'Retiro realizado exitosamente',
       payoutResult
     }
+  }
+
+  // Crear nueva cuenta bancaria (Nequi o Bancolombia)
+  @UseGuards(JwtAuthGuard)
+  @Post('bankAccounts')
+  async addBankAccount(@Req() req, @Body() dto: BankAccountDto) {
+    const userId = req.user['userId'];
+    if (!userId) {
+      throw new HttpException('User not authenticated', 401);
+    }
+    return this.walletService.addBankAccount(userId, dto);
+  }
+
+  // Actualizar cuenta bancaria existente
+  @UseGuards(JwtAuthGuard)
+  @Patch('bankAccounts/:accountId')
+  async updateBankAccount(
+    @Req() req,
+    @Param('accountId') accountId: string,
+    @Body() dto: BankAccountDto
+  ) {
+    const userId = req.user['userId'];
+    if (!userId) {
+      throw new HttpException('User not authenticated', 401);
+    }
+    return this.walletService.updateBankAccount(userId, accountId, dto);
+  }
+
+  // Eliminar cuenta bancaria
+  @UseGuards(JwtAuthGuard)
+  @Delete('bankAccounts/:accountId')
+  async deleteBankAccount(
+    @Req() req,
+    @Param('accountId') accountId: string
+  ) {
+    const userId = req.user['userId'];
+    if (!userId) {
+      throw new HttpException('User not authenticated', 401);
+    }
+    return this.walletService.deleteBankAccount(userId, accountId);
   }
 }

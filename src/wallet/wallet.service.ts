@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Wallet } from './interfaces/Wallet'
 import { WalletDto } from './dto/wallet.dto'
+import { BankAccountDto } from "./dto/bankaccount.dto";
 
 
 @Injectable()
@@ -135,5 +136,47 @@ export class WalletService {
       withdrawalPendingBalance: wallet.withdrawalPendingBalance,
       withdrawalTotalBalance: wallet.withdrawalTotalBalance
     }
+  }
+
+  // Agregar nueva cuenta bancaria
+  async addBankAccount(userId: string, dto: BankAccountDto): Promise<Wallet> {
+    const wallet = await this.walletModel.findOne({ userId });
+    if (!wallet) {
+      throw new NotFoundException(`Wallet not found for userId: ${userId}`);
+    }
+    wallet.bankAccounts = dto;
+    return wallet.save();
+  }
+
+  // Actualizar cuenta bancaria existente
+  async updateBankAccount(
+    userId: string,
+    accountId: string,
+    dto: BankAccountDto,
+  ): Promise<Wallet> {
+    const wallet = await this.walletModel.findOne({ userId });
+    if (!wallet) {
+      throw new NotFoundException(`Wallet not found for userId: ${userId}`);
+    }
+    const account = wallet.bankAccounts;
+    if (!account || (account as any)._id.toString() !== accountId) {
+      throw new NotFoundException(`Bank account not found: ${accountId}`);
+    }
+    wallet.bankAccounts = { ...dto, _id: accountId } as any;
+    return wallet.save();
+  }
+
+  // Eliminar cuenta bancaria
+  async deleteBankAccount(userId: string, accountId: string): Promise<Wallet> {
+    const wallet = await this.walletModel.findOne({ userId });
+    if (!wallet) {
+      throw new NotFoundException(`Wallet not found for userId: ${userId}`);
+    }
+    const account = wallet.bankAccounts;
+    if (!account || (account as any)._id.toString() !== accountId) {
+      throw new NotFoundException(`Bank account not found: ${accountId}`);
+    }
+    wallet.bankAccounts = undefined;
+    return wallet.save();
   }
 }

@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete, UseInterceptors, UploadedFile, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, NotFoundException, HttpStatus, UseGuards, Request, Query, Patch, Delete, UseInterceptors, UploadedFile, BadRequestException, InternalServerErrorException, Req, HttpException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Express } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AwsService } from 'src/aws/aws.service';
 import { PaginatedDto } from './dto/paginated.dto';
+import { BankAccountDto } from '../wallet/dto/bankaccount.dto'
 
 
 
@@ -139,6 +140,7 @@ export class UsersController {
     return this.usersService.updateShippingInfo(id, shippingInfo)
   }
 
+  // Deprecated
   @Patch('paypalaccount/:userid')
   updatePaypalAccount(@Param('userid') userid: string, @Body() updatePayplaDto: { paypalAccount: string }) {
     return this.usersService.updatePaypalAccount(userid, updatePayplaDto)
@@ -157,6 +159,7 @@ export class UsersController {
 
     return this.usersService.getPaypalAccount(userid)
   }
+  ////////
 
   @Get('notifications/:userId')
   async getNotifications(
