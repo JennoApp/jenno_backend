@@ -158,11 +158,19 @@ export class WalletService {
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`);
     }
-    const account = wallet.bankAccounts;
-    if (!account || (account as any)._id.toString() !== accountId) {
+    const account = wallet.bankAccounts as any;
+    if (!account || account._id?.toString() !== accountId) {
       throw new NotFoundException(`Bank account not found: ${accountId}`);
     }
-    wallet.bankAccounts = { ...dto, _id: accountId } as any;
+ 
+     // Asignar campos del DTO
+    account.accountNumber = dto.accountNumber;
+    account.name = dto.name;
+    account.accountType = dto.accountType;
+    account.legalIdType = dto.legalIdType;
+    account.legalId = dto.legalId;
+    account.bankType = dto.bankType;
+
     return wallet.save();
   }
 
