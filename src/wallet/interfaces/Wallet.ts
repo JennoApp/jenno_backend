@@ -25,6 +25,6 @@ export interface Wallet extends Document {
   withdrawalPendingBalance: number;
   withdrawalTotalBalance: number;
   currency: string;
-  bankAccounts: BankAccount | null;
+  bankAccounts: BankAccount[] | null;
   withdrawals: Withdrawal[];
 }

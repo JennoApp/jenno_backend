@@ -144,9 +144,10 @@ export class WalletService {
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`);
     }
-    wallet.bankAccounts = dto;
+    wallet.bankAccounts.push(dto)
     return wallet.save();
   }
+
 
   // Actualizar cuenta bancaria existente
   async updateBankAccount(
@@ -155,22 +156,25 @@ export class WalletService {
     dto: BankAccountDto,
   ): Promise<Wallet> {
     const wallet = await this.walletModel.findOne({ userId });
-    if (!wallet) {
-      throw new NotFoundException(`Wallet not found for userId: ${userId}`);
-    }
-    const account = wallet.bankAccounts as any;
-    if (!account || account._id?.toString() !== accountId) {
+    if (!wallet) throw new NotFoundException(`Wallet not found for userId: ${userId}`);
+
+    // wallet.bankAccounts es un array de subdocumentos
+    const accounts = (wallet.bankAccounts as any[]) || [];
+    const acct = accounts.find(a => a._id?.toString() === accountId);
+    if (!acct) {
       throw new NotFoundException(`Bank account not found: ${accountId}`);
     }
- 
-     // Asignar campos del DTO
-    account.accountNumber = dto.accountNumber;
-    account.name = dto.name;
-    account.accountType = dto.accountType;
-    account.legalIdType = dto.legalIdType;
-    account.legalId = dto.legalId;
-    account.bankType = dto.bankType;
 
+    // Actualizar campos del subdocumento encontrado
+    acct.bankType = dto.bankType;
+    acct.accountType = dto.accountType;
+    acct.accountNumber = dto.accountNumber;
+    acct.name = dto.name;
+    acct.legalIdType = dto.legalIdType;
+    acct.legalId = dto.legalId;
+
+    // Marcar el campo modificado (opcional)
+    wallet.markModified('bankAccounts');
     return wallet.save();
   }
 
