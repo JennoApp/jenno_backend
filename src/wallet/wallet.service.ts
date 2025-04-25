@@ -184,11 +184,19 @@ export class WalletService {
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`);
     }
-    const account = wallet.bankAccounts;
-    if (!account || (account as any)._id.toString() !== accountId) {
+
+    // wallet.bankAccounts es un array de subdocumentos
+    const accounts = (wallet.bankAccounts as any[]) || [];
+    // busco el índice de la cuenta a eliminar
+    const index = accounts.findIndex(a => a._id?.toString() === accountId);
+    if (index === -1) {
       throw new NotFoundException(`Bank account not found: ${accountId}`);
     }
-    wallet.bankAccounts = undefined;
+
+    // elimino el subdocumento del array
+    accounts.splice(index, 1);
+    wallet.bankAccounts = accounts as any;
+    wallet.markModified('bankAccounts');
     return wallet.save();
   }
 }
