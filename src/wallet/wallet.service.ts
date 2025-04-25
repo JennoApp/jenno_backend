@@ -144,7 +144,8 @@ export class WalletService {
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`);
     }
-    wallet.bankAccounts.push(dto)
+    wallet.bankAccounts.push(dto as any);
+    wallet.markModified('bankAccounts');
     return wallet.save();
   }
 
