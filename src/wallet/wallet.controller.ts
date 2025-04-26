@@ -44,36 +44,33 @@ export class WalletControler {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('withdraw/:paypalAccount')
-  async withdrawFunds(@Param('paypalAccount') paypalAccount, @Req() req, @Body() body: { amount: number, amountUsd: number }) {
+  @Post('withdraw/:accountId')
+  async requestWithdrawal(@Param('accountId') accountId, @Req() req, @Body('amount') amount: number) {
     console.log('Headers:', req.headers);
 
     const user = req.user
-    const amount = body.amount        // monto en pesos colombianos
-    const amountUsd = body.amountUsd  // monto en dolares
-
     const userId = user.userId
     if (!user || !userId) {
       throw new HttpException('User not authenticated', 401)
     }
 
-    // verificar si el usuario tiene suficiente balance para retirar
-    const balance = await this.walletService.getBalance(userId)
-    if (balance < amount) {
-      throw new HttpException('No tienes suficiente balance para retirar esta cantidad', 400)
+    if (amount <= 0) {
+      throw new HttpException('El monto debe ser mayor a cero', 400);
     }
 
-    // Realiza el payout utilizando el PaypalService en USD
-    const payoutResult = await this.paypalService.createPayout(paypalAccount, amountUsd)
-
-    // Actualiza el historial de retiros y reduce el balance del usuario
-    await this.walletService.updateWithdrawlHistory(userId, amount, amountUsd, payoutResult?.batch_header?.payout_batch_id)
-    await this.walletService.reduceBalance(userId, amount) // Reducir en pesos colombianos
+    // Delegamos la lógica al servicio
+    const updatedWallet = await this.walletService.requestWithdrawal(
+      userId,
+      accountId,
+      amount
+    );
 
     return {
-      message: 'Retiro realizado exitosamente',
-      payoutResult
-    }
+      message: 'Retiro solicitado exitosamente',
+      withdrawalPendingBalance: updatedWallet.withdrawalPendingBalance,
+      withdrawalTotalBalance: updatedWallet.withdrawalTotalBalance,
+      withdrawals: updatedWallet.withdrawals.filter(w => w.status === 'pending')
+    };
   }
 
   // Crear nueva cuenta bancaria (Nequi o Bancolombia)

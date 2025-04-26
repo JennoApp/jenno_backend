@@ -67,7 +67,7 @@ export const WalletSchema = new Schema({
   },
   withdrawals: [
     {
-      id: {
+      bankId: {
         type: String,
         require: true
       },

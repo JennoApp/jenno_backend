@@ -15,7 +15,7 @@ export class WalletService {
   async getWalletById(walletId) {
     const wallet = await this.walletModel.findById(walletId).lean();
     if (!wallet) {
-        throw new NotFoundException('Wallet not found');
+      throw new NotFoundException('Wallet not found');
     }
     return { wallet }
   }
@@ -23,7 +23,7 @@ export class WalletService {
   async getWithdrawalbyId(walletId) {
     const wallet = await this.walletModel.findById(walletId).lean();
     if (!wallet) {
-        throw new NotFoundException('Wallet not found');
+      throw new NotFoundException('Wallet not found');
     }
     return { withdrawals: wallet.withdrawals }
   }
@@ -127,7 +127,7 @@ export class WalletService {
 
   ////////////////
   async getWithdrawalBalances(userId: string) {
-    const wallet = await this.walletModel.findOne({ userId}).lean()
+    const wallet = await this.walletModel.findOne({ userId }).lean()
     if (!wallet) {
       throw new NotFoundException(`Wallet not found for userId: ${userId}`)
     }
@@ -198,6 +198,49 @@ export class WalletService {
     accounts.splice(index, 1);
     wallet.bankAccounts = accounts as any;
     wallet.markModified('bankAccounts');
+    return wallet.save();
+  }
+
+
+  /**
+   * Solicitar un retiro de fondos a una cuenta asociada.
+   * - Verifica balance disponible
+   * - Reduce availableBalance
+   * - Incrementa withdrawalPendingBalance
+   * - Agrega un registro en withdrawals con estado 'pending'
+   */
+  async requestWithdrawal(
+    userId: string,
+    accountId: string,
+    amount: number
+  ): Promise<Wallet> {
+    const wallet = await this.walletModel.findOne({ userId });
+    if (!wallet) throw new NotFoundException(`Wallet not found for userId: ${userId}`);
+
+    // verificar que exista la cuenta destino
+    const acct = (wallet.bankAccounts as any[]).find(a => a._id?.toString() === accountId);
+    if (!acct) throw new NotFoundException(`Bank account not found: ${accountId}`);
+
+    // verificar fondos disponibles
+    if (wallet.availableBalance < amount) {
+      throw new Error('Insufficient balance');
+    }
+
+    // ajustar balances
+    wallet.availableBalance -= amount;
+    wallet.withdrawalPendingBalance += amount;
+
+    // crear orden de retiro pending
+    wallet.withdrawals.push({
+      bankId: accountId,
+      amount,
+      requestDate: new Date(),
+      status: 'pending'
+    });
+
+    wallet.markModified('withdrawals');
+    wallet.markModified('withdrawalPendingBalance');
+    wallet.markModified('availableBalance');
     return wallet.save();
   }
 }

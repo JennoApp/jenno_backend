@@ -10,7 +10,7 @@ export interface BankAccount {
 }
 
 export interface Withdrawal {
-  id: string;
+  bankId: string;
   amount: number;
   requestDate: Date;
   status: 'pending' | 'completed' | 'rejected';
