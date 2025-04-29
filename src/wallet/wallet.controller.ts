@@ -28,6 +28,14 @@ export class WalletControler {
     return this.walletService.getWithdrawalbyId(walletId)
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('withdrawals/pending')
+  async listPendingWithdrawals(@Req() req) {
+    if (!req.user.isAdmin) throw new HttpException('Forbidden', 403);
+
+    return this.walletService.getAllPendingWithdrawals();
+  }
+
   @Get('getPaypalPayoutDetails/:batchId')
   getPaypalPayoutDetails(@Param('batchId') batchId) {
     return this.paypalService.getPaypalDetails(batchId)

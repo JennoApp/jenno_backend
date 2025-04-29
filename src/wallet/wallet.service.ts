@@ -243,4 +243,27 @@ export class WalletService {
     wallet.markModified('availableBalance');
     return wallet.save();
   }
+
+
+  /**
+   * Devuelve todos los subdocumentos withdrawals con status "pending",
+   * junto con su walletId y userId.
+   */
+  async getAllPendingWithdrawals() {
+    // Usamos agregación para desenrollar el array y filtrar
+    const result = await this.walletModel.aggregate([
+      { $unwind: '$withdrawals' },
+      { $match: { 'withdrawals.status': 'pending' } },
+      {
+        $project: {
+          _id: 0,
+          walletId: '$_id',
+          userId: '$userId',
+          withdrawal: '$withdrawals'
+        }
+      },
+      { $sort: { 'withdrawal.requestDate': -1 } }
+    ]);
+    return result;
+  }
 }
