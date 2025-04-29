@@ -4,6 +4,7 @@ import { Model } from "mongoose";
 import { Wallet } from './interfaces/Wallet'
 import { WalletDto } from './dto/wallet.dto'
 import { BankAccountDto } from "./dto/bankaccount.dto";
+import { PaginatedDto } from "./dto/paginated.dto";
 
 
 @Injectable()
@@ -245,25 +246,72 @@ export class WalletService {
   }
 
 
-  /**
-   * Devuelve todos los subdocumentos withdrawals con status "pending",
-   * junto con su walletId y userId.
-   */
-  async getAllPendingWithdrawals() {
-    // Usamos agregación para desenrollar el array y filtrar
-    const result = await this.walletModel.aggregate([
+   /** Retiros de una wallet, paginados */
+  async getWithdrawalByWallet(
+    walletId: string,
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedDto<any>> {
+    const wallet = await this.walletModel.findById(walletId).lean();
+    if (!wallet) throw new NotFoundException('Wallet not found');
+
+    // ordenar desc por requestDate
+    const all = wallet.withdrawals
+      .map(w => ({ ...w, requestDate: new Date(w.requestDate) }))
+      .sort((a, b) => b.requestDate.getTime() - a.requestDate.getTime());
+
+    const itemCount = all.length;
+    const start = (page - 1) * limit;
+    const paged = all.slice(start, start + limit);
+
+    return new PaginatedDto(
+      paged,
+      page,
+      limit,
+      itemCount
+    );
+  }
+
+
+  /** Retiros pending de todas las wallets, paginados */
+  async getPendingWithdrawals(
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedDto<any>> {
+    const skip = (page - 1) * limit;
+
+    // agregación con facet para contar y paginar
+    const [agg] = await this.walletModel.aggregate([
       { $unwind: '$withdrawals' },
       { $match: { 'withdrawals.status': 'pending' } },
+      { $sort: { 'withdrawals.requestDate': -1 } },
       {
-        $project: {
-          _id: 0,
-          walletId: '$_id',
-          userId: '$userId',
-          withdrawal: '$withdrawals'
+        $facet: {
+          items: [
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $project: {
+                _id: 0,
+                walletId: '$_id',
+                userId: '$userId',
+                withdrawal: '$withdrawals'
+              }
+            }
+          ],
+          totalCount: [{ $count: 'count' }]
         }
-      },
-      { $sort: { 'withdrawal.requestDate': -1 } }
+      }
     ]);
-    return result;
+
+    const items = agg.items;
+    const itemCount = agg.totalCount[0]?.count ?? 0;
+
+    return new PaginatedDto(
+      items,
+      page,
+      limit,
+      itemCount
+    );
   }
 }

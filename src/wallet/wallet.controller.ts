@@ -1,8 +1,9 @@
-import { Body, Controller, Param, Post, Get, Req, UseGuards, HttpException, Patch, Delete } from "@nestjs/common";
+import { Body, Controller, Param, Post, Get, Req, UseGuards, HttpException, Patch, Delete, Query } from "@nestjs/common";
 import { WalletService } from './wallet.service'
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { PaypalService } from "./paypal.service";
 import { BankAccountDto } from "./dto/bankaccount.dto";
+import { PaginatedDto } from "./dto/paginated.dto";
 
 
 @Controller('wallet')
@@ -24,16 +25,31 @@ export class WalletControler {
   }
 
   @Get('getwithdrawals/:walletId')
-  getWithdrawalbyId(@Param('walletId') walletId) {
-    return this.walletService.getWithdrawalbyId(walletId)
+  async getWithdrawalById(
+    @Param('walletId') walletId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ): Promise<PaginatedDto<any>> {
+    const p = Math.max(1, parseInt(page) || 1);
+    const l = Math.max(1, parseInt(limit) || 10);
+    return this.walletService.getWithdrawalByWallet(walletId, p, l);
   }
 
+  /**
+  * GET /wallet/withdrawals/pending?page=&limit=
+  * Retiros pendientes de todas las wallets (admin only), paginados.
+  */
   @UseGuards(JwtAuthGuard)
   @Get('withdrawals/pending')
-  async listPendingWithdrawals(@Req() req) {
+  async listPendingWithdrawals(
+    @Req() req,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ): Promise<PaginatedDto<any>> {
     if (!req.user.isAdmin) throw new HttpException('Forbidden', 403);
-
-    return this.walletService.getAllPendingWithdrawals();
+    const p = Math.max(1, parseInt(page) || 1);
+    const l = Math.max(1, parseInt(limit) || 20);
+    return this.walletService.getPendingWithdrawals(p, l);
   }
 
   @Get('getPaypalPayoutDetails/:batchId')
