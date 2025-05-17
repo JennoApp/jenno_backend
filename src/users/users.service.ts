@@ -65,7 +65,7 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      const { username, displayname, email, name, lastname, taxid, password, accountType, currency } = user;
+      const { username, displayname, email, name, lastname, taxid, password, accountType, currency, country } = user;
       if (!password || password.length < 6) {
         return {
           message: 'Password must be at least 6 characters',
@@ -92,6 +92,7 @@ export class UsersService {
           email: email,
           password: hashedPassword,
           accountType: accountType,
+          country: country
         });
       } else if (accountType === 'business') {
         newUser = new this.userModel({
@@ -104,6 +105,7 @@ export class UsersService {
           taxid: taxid,
           password: hashedPassword,
           accountType: accountType,
+          country: country
         });
       }
 
@@ -116,20 +118,19 @@ export class UsersService {
           availableBalance: 0,
           pendingBalance: 0,
           currency: currency,
-          bankAccountTokens: [],
-          transactionHistory: []
+          withdrawalPendingBalance: 0,
+          withdrawalTotalBalance: 0,
+          withdrawals: [],
+          bankAccounts: [],
         })
-
-        console.log('Wallet created: ', wallet)
 
         createUser.walletId = wallet._id
         await createUser.save()
-        console.log('User updated with wallet: ', createUser)
       }
 
       return createUser;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new Error('Error al crear usuario');
     }
   }
@@ -472,7 +473,7 @@ export class UsersService {
       // Obtener los IDs de las órdenes completadas
       const completedOrderIds = shoppingOrdersCompletedOrders.shopping.map((order: { _id: string }) => order._id);
 
-       const shoppingOrdersCompletedCount = await this.userModel
+      const shoppingOrdersCompletedCount = await this.userModel
         .findById(id)
         .populate({
           path: 'shopping',

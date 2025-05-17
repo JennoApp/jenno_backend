@@ -11,7 +11,7 @@ export interface User extends Document {
   followers: string[],
   orders: [],
   shopping: [],
-  walletId: string
-  paypalAccount: string,
-  notifications: []
+  walletId: string,
+  notifications: [],
+  country: string,
 }

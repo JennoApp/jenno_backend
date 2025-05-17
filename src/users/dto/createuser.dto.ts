@@ -10,4 +10,5 @@ export class CreateUserDto {
   accountType: string;
   walletId?: string;
   currency: string;
+  country: string;
 }
