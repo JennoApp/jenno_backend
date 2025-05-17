@@ -5,6 +5,7 @@ export interface User extends Document {
   displayname: string,
   email: string,
   profileImg: string,
+  bio: string,
   password: string,
   accountType: string,
   following: string[],

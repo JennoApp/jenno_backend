@@ -90,6 +90,7 @@ export class UsersService {
           displayname: displayname,
           profileImg: "",
           email: email,
+          bio: "",
           password: hashedPassword,
           accountType: accountType,
           country: country
@@ -100,6 +101,7 @@ export class UsersService {
           displayname: displayname,
           profileImg: "",
           email: email,
+          bio: "",
           name: name,
           lastname: lastname,
           taxid: taxid,
