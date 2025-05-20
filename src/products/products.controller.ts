@@ -81,10 +81,13 @@ export class ProductsController {
     // verificar que el producto exista
     const productData = await this.productsService.getProduct(product.productId)
 
+    const userId = req.user.userId
+    let productId = product.productId
 
-    if (product.productId && (product.productId !== null || product.productId !== undefined)) {
+    // Crear o actualizar datos "principales" del producto
+    if (productId) {
       // Actualizar producto
-      const updateProduct = {
+      await this.productsService.updateProduct(productId, {
         productId: product.productId,
         productname: product.productname,
         description: product.description,
@@ -113,19 +116,10 @@ export class ProductsController {
         options: product.options,
         especifications: product.especifications,
         visibility: product.visibility
-      }
-
-      await this.productsService.updateProduct(product.productId, updateProduct)
-
-      return {
-        msg: 'Product updated',
-        user: req.user.userId,
-        productId: product.productId
-      }
-
+      })
     } else {
       // Crear producto
-      const newProduct = {
+      const created = await this.productsService.createProduct({
         productname: product.productname,
         description: product.description,
         imgs: product.imgs,
@@ -136,10 +130,11 @@ export class ProductsController {
         shippingfee: product.shippingfee,
         weight: product.weight,
         /// dimensions
-        dimensions: {},
-        length: product.dimensions.length,
-        width: product.dimensions.width,
-        height: product.dimensions.height,
+        dimensions: {
+          length: product.dimensions.length,
+          width: product.dimensions.width,
+          height: product.dimensions.height,
+        },
         ///
         status: product.status,
         user: req.user.userId,
@@ -147,26 +142,28 @@ export class ProductsController {
         country: product.country && Array.isArray(product.country) && product.country.length > 0
           ? product.country
           : [req.user.country],
-        // country: Array.isArray(product.country) && product.country.length > 0
-        //   ? this.productsService.ensureUniqueCountries(productData?.country, product.country)
-        //   : this.productsService.ensureUniqueCountries(productData?.country, [req.user.country]),
-        ///
         options: product.options,
         especifications: product.especifications,
         visibility: product.visibility
-      }
+      })
+      productId = created._id.toString();
 
-      const saveProduct = await this.productsService.createProduct(newProduct)
-
-      const user: any = await this.usersService.getUser(req.user.userId)
-      user.products = user.products.concat(saveProduct._id)
+      const user: any = await this.usersService.getUser(userId)
+      user.products.push(created._id)
       await user.save()
+    }
 
-      return {
-        msg: 'Product created & add to user products list',
-        user: req.user.userId,
-        productId: saveProduct._id
-      }
+    if (typeof product.additionalInfo === 'string') {
+      await this.productsService.updateAdditionalInfo(
+        productId,
+        product.additionalInfo
+      )
+    }
+
+    return {
+      success: true,
+      productId,
+      message: productId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente'
     }
   }
 
@@ -299,4 +296,28 @@ export class ProductsController {
     };
   }
 
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload-additional-info/:productId')
+  @UseInterceptors(AnyFilesInterceptor())
+  async uploadAdditionalInfoImages(
+    @Request() req,
+    @Param('productId') productId: string,
+    @UploadedFiles() files: Express.Multer.File[]
+  ) {
+    const userId = req.user.userId;
+    const product = await this.productsService.getProduct(productId);
+    if (!product || product.user.toString() !== userId) {
+      throw new NotFoundException('Producto no encontrado o sin permiso');
+    }
+    if (!files?.length) {
+      throw new BadRequestException('No se recibieron archivos');
+    }
+
+    const urls = await Promise.all(
+      files.map(file => this.awsService.uploadFile(file, 'additionalInfo').then(r => r.publicUrl))
+    );
+
+    return { success: true, urls };
+  }
 }

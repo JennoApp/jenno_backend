@@ -29,7 +29,7 @@ export class AwsService {
 
   async uploadFile(
     file: Express.Multer.File,
-    type: 'product' | 'profile' | 'adittionalInfo'
+    type: 'product' | 'profile' | 'additionalInfo'
   ) {
     const buffer = file.buffer
     // Generar un UUID para el nombre del archivo
