@@ -316,4 +316,43 @@ export class ProductsService {
 
     return product
   }
+
+  /**
+   * Actualiza el campo additionalInfo (HTML con <img src="...">) y limpia las imágenes antiguas.
+   */
+  async updateAdditionalInfo(productId: string, newHtml: string) {
+    // 1. Busca el producto
+    const product = await this.productModel.findById(productId);
+    if (!product) throw new NotFoundException('Producto no encontrado');
+
+    const oldHtml: string = String(product.additionalInfo || '')
+
+    // 2. Función para extraer todos los src de <img>
+    const extractImageUrls = (html: string): string[] => {
+      const urls: string[] = [];
+      const re = /<img[^>]+src="([^">]+)"/g;
+      let match;
+      while ((match = re.exec(html))) {
+        urls.push(match[1]);
+      }
+      return urls;
+    };
+
+    const oldUrls = extractImageUrls(oldHtml);
+    const newUrls = extractImageUrls(newHtml);
+
+    // 3. Calcula cuáles estaban y ya no están → borrarlas de S3
+    const toDelete = oldUrls.filter(url => !newUrls.includes(url));
+    if (toDelete.length) {
+      await Promise.all(
+        toDelete.map(url => this.awsService.deleteFileFromS3(url))
+      );
+    }
+
+    // 4. Guarda el nuevo HTML en el producto
+    product.additionalInfo = newHtml;
+    await product.save();
+
+    return product;
+  }
 }

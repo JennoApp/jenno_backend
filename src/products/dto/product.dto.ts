@@ -11,6 +11,7 @@ export class ProductDto {
   requirements?: string;
   policies?: string;
   description?: string;
+  additionalInfo?: string;
   category?: string;
   shippingfee?: number;
   attributes?: string[];

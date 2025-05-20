@@ -52,6 +52,7 @@ export const ProductSchema = new Schema({
   requirements: String,
   policies: String,
   description: String,
+  additionalInfo: String,
   category: {
     type: String,
     required: true
@@ -107,7 +108,7 @@ export const ProductSchema = new Schema({
   country: {
     type: [String],
     default: []
-  }, 
+  },
 }, {
   timestamps: true
 })

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -251,7 +251,7 @@ export class ProductsController {
   }
 
   @Post('updatevisibility/:id')
-  async updateVisibility(@Param('id') id,@Body() body: { visibility: boolean }) {
+  async updateVisibility(@Param('id') id, @Body() body: { visibility: boolean }) {
     if (typeof body.visibility !== 'boolean') {
       return {
         message: 'El campo visibility debe ser booleano'
@@ -268,4 +268,35 @@ export class ProductsController {
       }
     }
   }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('additional-info/:productId')
+  async saveAdditionalInfo(
+    @Request() req,
+    @Param('productId') productId: string,
+    @Body('additionalInfo') newHtml: string
+  ) {
+    const userId = req.user.userId;
+
+    // 1. Buscar producto
+    const product = await this.productsService.getProduct(productId);
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado');
+    }
+
+    // 2. Verificar si el producto pertenece al usuario
+    if (product.user.toString() !== userId) {
+      throw new ForbiddenException('No tienes permiso para modificar este producto');
+    }
+
+    // 3. Actualizar la info adicional (esto también limpia imágenes no usadas)
+    const updated = await this.productsService.updateAdditionalInfo(productId, newHtml);
+
+    return {
+      success: true,
+      additionalInfo: updated.additionalInfo,
+    };
+  }
+
 }

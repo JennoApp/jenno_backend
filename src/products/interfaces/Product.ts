@@ -11,6 +11,7 @@ export interface Product extends Document {
   requirements: String,
   policies: String,
   description: String,
+  additionalInfo: String,
   category: String,
   attributes: [String],
   weight: Number,

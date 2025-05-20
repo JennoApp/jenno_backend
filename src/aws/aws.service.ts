@@ -27,14 +27,23 @@ export class AwsService {
     })
   }
 
-  async uploadFile(file: Express.Multer.File, type: 'product' | 'profile') {
+  async uploadFile(
+    file: Express.Multer.File,
+    type: 'product' | 'profile' | 'adittionalInfo'
+  ) {
     const buffer = file.buffer
     // Generar un UUID para el nombre del archivo
     const fileId = uuidv4()
     const extension = file.originalname.split('.').pop()
 
     // Ruta basada en el tipo de imagen
-    const folder = type === 'product' ? 'products' : 'profiles'
+    const folder =
+      type === 'product'
+        ? 'products'
+        : type === 'profile'
+          ? 'profiles'
+          : 'adittionalInfo'
+
     const uploadParams = {
       Bucket: this.bucketName,
       Key: `${folder}/${fileId}.${extension}`,
@@ -44,8 +53,6 @@ export class AwsService {
     const command = new PutObjectCommand(uploadParams)
     const result = await this.client.send(command)
 
-    console.log(result)
-
     return {
       result,
       publicUrl: `https://${this.bucketName}.s3.${this.s3Region}.amazonaws.com/${folder}/${fileId}.${extension}`
@@ -53,12 +60,13 @@ export class AwsService {
   }
 
   async deleteFileFromS3(fileUrl: string) {
-    // const fileKey = fileUrl.split(`${this.bucketName}/`)[1]
     try {
       const urlParts = new URL(fileUrl)
       const fileKey = urlParts.pathname.substring(1)
-      console.log('File key:', fileKey)
 
+      if (!urlParts.hostname.includes(this.bucketName)) {
+        throw new Error('La URL no pertenece a este bucket');
+      }
 
       const deleteParams = {
         Bucket: this.bucketName,
@@ -72,6 +80,6 @@ export class AwsService {
     } catch (error) {
       console.error('Error al eliminar archivo de S3:', error)
       throw error
-    }    
+    }
   }
 }
