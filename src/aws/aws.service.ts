@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config'
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3'
 import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
@@ -29,36 +29,59 @@ export class AwsService {
 
   async uploadFile(
     file: Express.Multer.File,
-    type: 'product' | 'profile' | 'additionalInfo'
+    type: 'product' | 'profile' | 'additionalInfo' | 'draft',
+    userId?: string // solo se usa para el tipo 'draft'
   ) {
     const buffer = file.buffer
     // Generar un UUID para el nombre del archivo
     const fileId = uuidv4()
     const extension = file.originalname.split('.').pop()
+    let folder: string
 
-    // Ruta basada en el tipo de imagen
-    const folder =
-      type === 'product'
-        ? 'products'
-        : type === 'profile'
-          ? 'profiles'
-          : 'adittionalInfo'
+    switch (type) {
+      case 'product':
+        folder = 'products';
+        break;
+      case 'profile':
+        folder = 'profiles';
+        break;
+      case 'additionalInfo':
+        folder = 'additionalInfo';
+        break;
+      case 'draft':
+        if (!userId) {
+          throw new ForbiddenException('userId es requerido para borradores')
+        }
+        folder = `drafts/${userId}`;
+        break;
+      default:
+        folder = '';
+    }
 
+
+    const key = `${folder}/${fileId}.${extension}`;
     const uploadParams = {
       Bucket: this.bucketName,
-      Key: `${folder}/${fileId}.${extension}`,
+      Key: key,
       Body: Buffer.from(buffer)
     }
 
-    const command = new PutObjectCommand(uploadParams)
+    const command = new PutObjectCommand({
+      ...uploadParams,
+      ContentType: file.mimetype,
+      ACL: 'public-read'
+    })
     const result = await this.client.send(command)
 
     return {
       result,
-      publicUrl: `https://${this.bucketName}.s3.${this.s3Region}.amazonaws.com/${folder}/${fileId}.${extension}`
+      publicUrl: `https://${this.bucketName}.s3.${this.s3Region}.amazonaws.com/${key}`
     }
   }
 
+  /**
+   * Elimina un archivo de S3 dada su URL pública.
+   */
   async deleteFileFromS3(fileUrl: string) {
     try {
       const urlParts = new URL(fileUrl)
@@ -81,5 +104,29 @@ export class AwsService {
       console.error('Error al eliminar archivo de S3:', error)
       throw error
     }
+  }
+
+  /**
+   * Copia un archivo de S3 de una clave origen a una clave destino.
+   * Luego elimina el origen. Útil para migrar drafts a carpeta final.
+   */
+  async moveFile(fromKey: string, toKey: string): Promise<string> {
+    // Copiar
+    const copyCmd = new CopyObjectCommand({
+      Bucket: this.bucketName,
+      CopySource: `${this.bucketName}/${fromKey}`,
+      Key: toKey,
+      ACL: 'public-read'
+    });
+    await this.client.send(copyCmd);
+
+    // Eliminar origen
+    const delCmd = new DeleteObjectCommand({
+      Bucket: this.bucketName,
+      Key: fromKey
+    });
+    await this.client.send(delCmd);
+
+    return `https://${this.bucketName}.s3.${this.s3Region}.amazonaws.com/${toKey}`;
   }
 }

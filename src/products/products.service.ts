@@ -355,4 +355,41 @@ export class ProductsService {
 
     return product;
   }
+
+  /**
+   * Mueve imágenes subidas en modo "draft" a la carpeta definitiva del producto,
+   * y actualiza las URLs en el HTML de additionalInfo.
+   */
+  async migrateDraftImages(
+    productId: string,
+    html: string,
+    userId: string
+  ): Promise<string> {
+    // Prefijos de las carpetas en S3
+    const draftPrefix = `drafts/${userId}/`;
+    const finalPrefix = `products/additional-info/${productId}/`;
+
+    // Extracción de todas las rutas relativas desde el HTML
+    const urls: string[] = [];
+    const re = /<img[^>]+src="https:\/\/[^/]+\/([^">]+)"/g;
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(html))) {
+      urls.push(match[1]); // ej. 'drafts/12345/uuid.jpg'
+    }
+
+    // Para cada URL de draft, la movemos y actualizamos el HTML
+    for (const key of urls.filter(k => k.startsWith(draftPrefix))) {
+      const filename = key.slice(draftPrefix.length);        // 'uuid.jpg'
+      const newKey = `${finalPrefix}${filename}`;            // 'products/additional-info/ID/uuid.jpg'
+
+      const newUrl = await this.awsService.moveFile(key, newKey);
+      // Reemplazar todas las apariciones de la URL antigua por la nueva
+      html = html.replace(
+        new RegExp(`https://[^/]+/${key}`, 'g'),
+        newUrl
+      );
+    }
+
+    return html;
+  }
 }

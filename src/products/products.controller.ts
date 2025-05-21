@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Request, Body, UseGuards, Param, Query, ParseIntPipe, UseInterceptors, UploadedFiles, NotFoundException, BadRequestException, ForbiddenException, UploadedFile } from '@nestjs/common'
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UsersService } from 'src/users/users.service';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { AwsService } from 'src/aws/aws.service';
 
 @Controller('products')
@@ -153,10 +153,19 @@ export class ProductsController {
       await user.save()
     }
 
-    if (typeof product.additionalInfo === 'string') {
+    // Si hay additionalInfo, migramos imágenes y guardamos el HTML limpio
+    if (typeof product.additionalInfo === 'string' && product.additionalInfo.trim()) {
+      const cleanHtml = await this.productsService.migrateDraftImages(
+        productId,
+        product.additionalInfo,
+        userId
+      );
+
+      product.additionalInfo = cleanHtml;
+
       await this.productsService.updateAdditionalInfo(
         productId,
-        product.additionalInfo
+        cleanHtml
       )
     }
 
@@ -320,4 +329,32 @@ export class ProductsController {
 
     return { success: true, urls };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload-additional-info-draft')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAdditionalInfoDraft(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req
+  ) {
+    if (!file) throw new BadRequestException('No se recibió archivo');
+    const userId = req.user.userId;
+    // Aquí usamos el tipo 'draft'
+    const { publicUrl } = await this.awsService.uploadFile(file, 'draft', userId);
+    return { success: true, url: publicUrl };
+  }
+
+
+  @Post('upload-additional-info-draft')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDraftAdditionalInfo(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req
+  ) {
+    if (!file) throw new BadRequestException('No se recibió archivo');
+    const userId = req.user.userId;
+    const { publicUrl } = await this.awsService.uploadFile(file, 'draft', userId);
+    return { url: publicUrl };
+  }
+
 }
