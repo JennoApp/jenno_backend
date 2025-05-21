@@ -337,24 +337,11 @@ export class ProductsController {
     @UploadedFile() file: Express.Multer.File,
     @Request() req
   ) {
-    if (!file) throw new BadRequestException('No se recibió archivo');
+    if (!file) {
+      throw new BadRequestException('No se recibió archivo');
+    }
     const userId = req.user.userId;
-    // Aquí usamos el tipo 'draft'
     const { publicUrl } = await this.awsService.uploadFile(file, 'draft', userId);
     return { success: true, url: publicUrl };
   }
-
-
-  @Post('upload-additional-info-draft')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadDraftAdditionalInfo(
-    @UploadedFile() file: Express.Multer.File,
-    @Request() req
-  ) {
-    if (!file) throw new BadRequestException('No se recibió archivo');
-    const userId = req.user.userId;
-    const { publicUrl } = await this.awsService.uploadFile(file, 'draft', userId);
-    return { url: publicUrl };
-  }
-
 }

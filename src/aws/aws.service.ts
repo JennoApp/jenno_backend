@@ -69,7 +69,6 @@ export class AwsService {
     const command = new PutObjectCommand({
       ...uploadParams,
       ContentType: file.mimetype,
-      ACL: 'public-read'
     })
     const result = await this.client.send(command)
 
