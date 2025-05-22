@@ -153,13 +153,18 @@ export class ProductsController {
       await user.save()
     }
 
+    console.log('💡 product.additionalInfo recibido:', product.additionalInfo);
+
     // Si hay additionalInfo, migramos imágenes y guardamos el HTML limpio
     if (typeof product.additionalInfo === 'string' && product.additionalInfo.trim()) {
+      console.log('✅ Procesando migrateDraftImages...');
       const cleanHtml = await this.productsService.migrateDraftImages(
         productId,
         product.additionalInfo,
         userId
       );
+
+      console.log('🧼 HTML limpio obtenido:', cleanHtml);
 
       product.additionalInfo = cleanHtml;
 
@@ -167,6 +172,10 @@ export class ProductsController {
         productId,
         cleanHtml
       )
+
+      console.log('📦 additionalInfo actualizado en base de datos.');
+    } else {
+      console.log('❌ additionalInfo vacío o inválido, no se guarda nada.');
     }
 
     return {
