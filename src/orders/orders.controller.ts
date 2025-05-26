@@ -91,10 +91,18 @@ export class OrdersController {
 
       await userSeller.save()
 
-      // Actualizar producto
-      // obtiene el producto y resta la cantidad de la orden
+      // Actualizar producto,
+      // obtiene el producto,
+      // resta la cantidad de la orden,
+      // actualiza el status segun sea necesario.
       const product: any = await this.productsService.getProduct(order.product?._id)
       product.quantity -= order.amount
+
+      if (product.quantity <= 0) {
+        product.quantity = 0;
+        product.status = 'sould_out';
+      }
+
       await product.save()
 
       // Actualizar comprador
