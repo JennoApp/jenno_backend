@@ -39,14 +39,11 @@ export class WalletControler {
   * GET /wallet/withdrawals/pending?page=&limit=
   * Retiros pendientes de todas las wallets (admin only), paginados.
   */
-  @UseGuards(JwtAuthGuard)
   @Get('withdrawals/pending')
   async listPendingWithdrawals(
-    @Req() req,
     @Query('page') page?: string,
     @Query('limit') limit?: string
   ): Promise<PaginatedDto<any>> {
-    if (!req.user.isAdmin) throw new HttpException('Forbidden', 403);
     const p = Math.max(1, parseInt(page) || 1);
     const l = Math.max(1, parseInt(limit) || 20);
     return this.walletService.getPendingWithdrawals(p, l);

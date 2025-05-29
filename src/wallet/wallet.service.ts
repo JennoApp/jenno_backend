@@ -37,6 +37,7 @@ export class WalletService {
     const wallet = new this.walletModel({ ...data, userId: userId })
     return await wallet.save()
   }
+  
 
   async updatePendingBalance(userId: string, balance: number) {
     try {
