@@ -53,13 +53,13 @@ export const UserSchema = new Schema({
     document: Number,
     country: String,
     address: String,
-    city:  String,
+    city: String,
     state: String,
     postalCode: String,
     phoneNumber: Number
   },
   // Orders
-  orders:[{
+  orders: [{
     type: Schema.Types.ObjectId,
     ref: 'Order'
   }],
@@ -115,5 +115,42 @@ export const UserSchema = new Schema({
         default: false
       }
     }
-  ]
+  ],
+
+  // Marketing services integration
+  marketing: {
+    google: {
+      clientId: String,
+      refreshToken: String,
+      accessToken: String, // opcional si quieres cachearlo
+      tokenExpiry: Date,    // fecha de expiración del access_token si lo almacenas
+      accountId: String,    // ID de la cuenta de Google Ads
+      customerId: String,   // ID del cliente de Google Ads
+      campaigns: [          // campañas creadas desde Jenno (opcional)
+        {
+          campaignId: String,
+          name: String,
+          status: String,
+          createdAt: Date
+        }
+      ]
+    },
+    meta: {
+      businessId: String,
+      accessToken: String,
+      refreshToken: String,   // si Meta lo requiere (en algunos casos lo usa)
+      adAccountId: String,
+      pageId: String,
+      instagramId: String,
+      campaigns: [            // campañas creadas desde Jenno (opcional)
+        {
+          campaignId: String,
+          name: String,
+          status: String,
+          createdAt: Date
+        }
+      ]
+    }
+  }
+
 })

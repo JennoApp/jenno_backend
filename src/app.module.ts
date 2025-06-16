@@ -10,6 +10,7 @@ import { PaymentsModule } from './payments/payments.module'
 import { OrdersModule } from './orders/orders.module'
 import { WalletModule } from './wallet/wallet.module'
 import { MailsModule } from './mails/mails.module'
+import { MarketingModule } from './marketing/marketing.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { BullModule } from '@nestjs/bullmq'
 
@@ -64,6 +65,7 @@ import { BullModule } from '@nestjs/bullmq'
     WalletModule,
     WebSocketModule,
     MailsModule,
+    MarketingModule,
   ],
   controllers: [AppController],
   providers: [],
