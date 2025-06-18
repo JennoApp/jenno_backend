@@ -1,12 +1,13 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { MarketingService } from './marketing.service';
 import type { Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('marketing')
 export class MarketingController {
   constructor(private readonly marketingService: MarketingService) {}
 
-  @Get('google-auth-url')
+  @Get('googleauthurl')
   getAuthUrl() {
     return { url: this.marketingService.getGoogleOAuthUrl() };
   }
@@ -25,5 +26,12 @@ export class MarketingController {
 
     // Redirige de nuevo al frontend
     return res.redirect(this.marketingService.getFrontendRedirectUrl());
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('googlestatus')
+  async getGoogleStatus(@Req() req: any) {
+    const userId = req.user.userId
+    return this.marketingService.getMarkteingGoogleStatus(userId);
   }
 }

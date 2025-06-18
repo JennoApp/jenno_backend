@@ -13,6 +13,16 @@ export class MarketingService {
     return this.config.get('FRONTEND_URL') + '/admin/marketing/integrations';
   }
 
+  async getMarkteingGoogleStatus(userId: string) {
+    const user = await this.usersService.findById(userId)
+    const googleConnected = !!user?.marketing?.google?.refreshToken;
+    return {
+      googleConnected,
+      storeId: user._id
+    }
+  }
+
+
   getGoogleOAuthUrl(): string {
     const params = new URLSearchParams({
       client_id: this.config.get('GOOGLE_CLIENT_ID'),
