@@ -8,8 +8,8 @@ export class MarketingController {
   constructor(private readonly marketingService: MarketingService) {}
 
   @Get('googleauthurl')
-  getAuthUrl() {
-    return { url: this.marketingService.getGoogleOAuthUrl() };
+  getAuthUrl(@Query('storeId') storeId: string) {
+    return { url: this.marketingService.getGoogleOAuthUrl(storeId) };
   }
 
 

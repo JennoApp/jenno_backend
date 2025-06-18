@@ -23,7 +23,7 @@ export class MarketingService {
   }
 
 
-  getGoogleOAuthUrl(): string {
+  getGoogleOAuthUrl(storeId: string): string {
     const params = new URLSearchParams({
       client_id: this.config.get('GOOGLE_CLIENT_ID'),
       redirect_uri: this.config.get('GOOGLE_REDIRECT_URI'),
@@ -31,6 +31,7 @@ export class MarketingService {
       scope: 'https://www.googleapis.com/auth/adwords',
       access_type: 'offline',
       prompt: 'consent',
+      state: storeId,
     })
 
     return `https://accounts.google.com/o/oauth2/auth?${params.toString()}`;
