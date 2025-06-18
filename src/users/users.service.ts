@@ -584,4 +584,33 @@ export class UsersService {
       };
     }
   }
+
+  /**
+   * Actualiza los tokens de Google Ads para el usuario (tienda) dado.
+   */
+  async updateGoogleMarketingTokens(
+    userId: string,
+    data: {
+      clientId: string;
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number; // en segundos
+    }
+  ) {
+    const tokenExpiry = new Date(Date.now() + data.expiresIn * 1000);
+
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          'marketing.google.clientId': data.clientId,
+          'marketing.google.accessToken': data.accessToken,
+          'marketing.google.refreshToken': data.refreshToken,
+          'marketing.google.tokenExpiry': tokenExpiry,
+        },
+      },
+      { new: true }
+    );
+  }
+
 }

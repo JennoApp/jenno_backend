@@ -1,11 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class MarketingService {
-  constructor(private readonly config: ConfigService) { }
+  constructor(
+    private readonly config: ConfigService,
+    readonly usersService: UsersService,
+  ) { }
 
+  getFrontendRedirectUrl(): string {
+    return this.config.get('FRONTEND_URL') + '/admin/marketing/integrations';
+  }
 
   getGoogleOAuthUrl(): string {
     const params = new URLSearchParams({
@@ -34,6 +40,16 @@ export class MarketingService {
       }),
     });
 
-    return response.json(); // Aquí viene access_token y refresh_token
+    return response.json(); // { access_token, refresh_token, expires_in, token_type… }
   }
+
+  async saveTokensForStore(storeId: string, tokens: any) {
+    await this.usersService.updateGoogleMarketingTokens(storeId, {
+      clientId: this.config.get('GOOGLE_CLIENT_ID'),
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresIn: tokens.expires_in,
+    });
+  }
+
 }

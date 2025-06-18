@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import { MarketingService } from './marketing.service';
+import type { Response } from 'express';
 
 @Controller('marketing')
 export class MarketingController {
@@ -10,9 +11,19 @@ export class MarketingController {
     return { url: this.marketingService.getGoogleOAuthUrl() };
   }
 
-  @Get('google-callback')
-  async handleGoogleCallback(@Query('code') code: string) {
+
+  @Get('googlecallback')
+  async handleGoogleCallback(
+    @Query('code') code: string,
+    @Query('state') storeId: string,
+    @Res() res: Response
+  ) {
     const tokens = await this.marketingService.exchangeCodeForToken(code);
-    return tokens;
+
+    // Guarda los tokens en el usuario/tienda
+    await this.marketingService.saveTokensForStore(storeId, tokens);
+
+    // Redirige de nuevo al frontend
+    return res.redirect(this.marketingService.getFrontendRedirectUrl());
   }
 }
