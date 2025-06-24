@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './interfaces/User';
@@ -98,7 +98,8 @@ export class UsersService {
           bio: "",
           password: hashedPassword,
           accountType: accountType,
-          country: country
+          country: country,
+          authProvider: 'local'
         });
       } else if (accountType === 'business') {
         newUser = new this.userModel({
@@ -112,7 +113,8 @@ export class UsersService {
           taxid: taxid,
           password: hashedPassword,
           accountType: accountType,
-          country: country
+          country: country,
+          authProvider: 'local',
         });
       }
 
@@ -618,6 +620,52 @@ export class UsersService {
     );
   }
 
+  // crear cuenta con Google
+  async createGoogleUser(user: {
+    username: string;
+    displayname: string;
+    email: string;
+    profileImg: string;
+    googleId: string;
+    accountType: 'personal' | 'business';
+    country?: string;
+  }) {
+    const existing = await this.userModel.findOne({ email: user.email });
+    if (existing) throw new ConflictException('Email ya registrado');
+
+    const newUser = new this.userModel({
+      username: user.username,
+      displayname: user.displayname,
+      email: user.email,
+      profileImg: user.profileImg,
+      googleId: user.googleId,
+      authProvider: 'google',
+      accountType: user.accountType,
+      country: user.country || 'Colombia',
+    });
+
+    const savedUser = await newUser.save();
+
+    if (user.accountType === 'business') {
+      const wallet = await this.walletService.createWallet(savedUser._id, {
+        totalEarned: 0,
+        availableBalance: 0,
+        pendingBalance: 0,
+        currency: 'COP',
+        withdrawalPendingBalance: 0,
+        withdrawalTotalBalance: 0,
+        withdrawals: [],
+        bankAccounts: [],
+      });
+
+      savedUser.walletId = wallet._id;
+      await savedUser.save();
+    }
+
+    return savedUser;
+  }
+
+
 
   async loginWithGoogle(idToken: string) {
     const ticket = await this.googleClient.verifyIdToken({
@@ -635,13 +683,12 @@ export class UsersService {
     let user = await this.getUserByEmail(email);
 
     if (!user) {
-      user = await this.createUser({
+      user = await this.createGoogleUser({
         username: name,
         displayname: name,
         email,
         profileImg: picture,
         googleId,
-        authProvider: 'google',
         accountType: 'personal',
       });
     }
