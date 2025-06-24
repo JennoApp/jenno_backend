@@ -25,7 +25,7 @@ export class UsersService {
     private jwtService: JwtService
   ) {
     this.googleClient = new OAuth2Client(this.config.get('GOOGLE_CLIENT_ID'))
-   }
+  }
 
   async getUsers() {
     return await this.userModel.find();
@@ -54,11 +54,7 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string) {
-    const user = await this.userModel.findOne({ email })
-    if (!user) {
-      throw new NotFoundException(`Usuario con el correo ${email} no encontrado.`)
-    }
-    return user
+    return await this.userModel.findOne({ email });
   }
 
   async getProfileImg(id: string) {
