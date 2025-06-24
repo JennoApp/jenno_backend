@@ -223,4 +223,9 @@ export class UsersController {
     const result = await this.usersService.markNotificationsAsRead(userId);
     return result;
   }
+
+  @Post('google-login')
+  async loginWithGoogle(@Body('idToken') idToken: string) {
+    return this.usersService.loginWithGoogle(idToken);
+  }
 }

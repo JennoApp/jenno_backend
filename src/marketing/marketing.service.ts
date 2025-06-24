@@ -1,13 +1,22 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { UsersService } from "../users/users.service";
+import { GoogleAdsApi } from 'google-ads-api'
 
 @Injectable()
 export class MarketingService {
+  private googleAdsClient: GoogleAdsApi;
+
   constructor(
     private readonly config: ConfigService,
     readonly usersService: UsersService,
-  ) { }
+  ) {
+    this.googleAdsClient = new GoogleAdsApi({
+      client_id: this.config.get('GOOGLE_CLIENT_ID'),
+      client_secret: this.config.get('GOOGLE_CLIENT_SECRET'),
+      developer_token: this.config.get('GOOGLE_DEVELOPER_TOKEN'),
+    })
+  }
 
   getFrontendRedirectUrl(): string {
     return this.config.get('FRONTEND_URL') + '/admin/marketing/integrations';
@@ -63,4 +72,26 @@ export class MarketingService {
     });
   }
 
+  async listGoogleAdsAccountsForStore(userId: string) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user?.marketing?.google?.refreshToken) {
+      throw new Error('Usuario no tiene refreshToken configurado');
+    }
+
+    const customer = this.googleAdsClient.Customer({
+      customer_id: this.config.get('GOOGLE_MANAGER_ID'), // MCC ID
+      refresh_token: user.marketing.google.refreshToken,
+    });
+
+    // Consulta básica como prueba
+    const query = `
+      SELECT customer.id, customer.descriptive_name
+      FROM customer
+      LIMIT 10
+    `;
+
+    const accounts = await customer.query(query);
+    return accounts;
+  }
 }

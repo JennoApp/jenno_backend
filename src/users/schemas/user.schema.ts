@@ -21,10 +21,30 @@ export const UserSchema = new Schema({
     required: true,
     unique: true
   },
+
+  // Si el usuario se registra con Google, password puede ser null
   password: {
     type: String,
-    required: true
+    required: function () {
+      return this.authProvider === 'local'
+    }
   },
+
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
+
+  googleId: {
+    type: String,
+    required: function () {
+      return this.authProvider === 'google'
+    },
+    unique: true,
+    sparse: true,
+  },
+
   bio: {
     type: String,
     required: false

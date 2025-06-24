@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './interfaces/User';
@@ -8,15 +8,24 @@ import { PaginatedDto } from './dto/paginated.dto';
 import { WalletService } from '../wallet/wallet.service'
 import { AwsService } from 'src/aws/aws.service';
 import { BankAccountDto } from '../wallet/dto/bankaccount.dto';
+import { JwtService } from '@nestjs/jwt'
+import { ConfigService } from "@nestjs/config";
+import { OAuth2Client } from 'google-auth-library'
 
 
 @Injectable()
 export class UsersService {
+  private googleClient: OAuth2Client;
+
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly config: ConfigService,
     readonly walletService: WalletService,
-    private awsService: AwsService
-  ) { }
+    private awsService: AwsService,
+    private jwtService: JwtService
+  ) {
+    this.googleClient = new OAuth2Client(this.config.get('GOOGLE_CLIENT_ID'))
+   }
 
   async getUsers() {
     return await this.userModel.find();
@@ -611,6 +620,46 @@ export class UsersService {
       },
       { new: true }
     );
+  }
+
+
+  async loginWithGoogle(idToken: string) {
+    const ticket = await this.googleClient.verifyIdToken({
+      idToken,
+      audience: this.config.get('GOOGLE_CLIENT_ID'),
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email_verified) {
+      throw new UnauthorizedException('Token de Google no válido');
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    let user = await this.getUserByEmail(email);
+
+    if (!user) {
+      user = await this.createUser({
+        username: name,
+        displayname: name,
+        email,
+        profileImg: picture,
+        googleId,
+        authProvider: 'google',
+        accountType: 'personal',
+      });
+    }
+
+    const tokenPayload = {
+      username: user.username,
+      sub: user._id,
+      accountType: user.accountType,
+      country: user.country,
+    };
+
+    return {
+      access_token: this.jwtService.sign(tokenPayload),
+    };
   }
 
 }
