@@ -6,6 +6,7 @@ import { UsersService } from './users.service';
 import { WalletService } from '../wallet/wallet.service'
 import { WalletModule } from 'src/wallet/wallet.module';
 import { AwsModule } from '../aws/aws.module'
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AwsModule } from '../aws/aws.module'
     ]),
     WalletModule,
     AwsModule,
+    AuthModule
   ],
   controllers: [UsersController],
   providers: [UsersService, WalletService],
