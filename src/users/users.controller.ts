@@ -224,7 +224,7 @@ export class UsersController {
     return result;
   }
 
-  @Post('google-login')
+  @Post('/google/login')
   async loginWithGoogle(@Body('idToken') idToken: string) {
     return this.usersService.loginWithGoogle(idToken);
   }
