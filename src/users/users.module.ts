@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.schema';
 import { UsersController } from './users.controller';
@@ -15,7 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
     ]),
     WalletModule,
     AwsModule,
-    AuthModule
+    forwardRef(() => AuthModule)
   ],
   controllers: [UsersController],
   providers: [UsersService, WalletService],
