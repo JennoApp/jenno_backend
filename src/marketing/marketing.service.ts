@@ -24,6 +24,7 @@ export class MarketingService {
 
   async getMarkteingGoogleStatus(userId: string) {
     const user = await this.usersService.findById(userId)
+    // @ts-ignore
     const googleConnected = !!user?.marketing?.google?.refreshToken;
     return {
       googleConnected,
@@ -75,12 +76,14 @@ export class MarketingService {
   async listGoogleAdsAccountsForStore(userId: string) {
     const user = await this.usersService.findById(userId);
 
+    // @ts-ignore
     if (!user?.marketing?.google?.refreshToken) {
       throw new Error('Usuario no tiene refreshToken configurado');
     }
 
     const customer = this.googleAdsClient.Customer({
       customer_id: this.config.get('GOOGLE_MANAGER_ID'), // MCC ID
+      // @ts-ignore
       refresh_token: user.marketing.google.refreshToken,
     });
 

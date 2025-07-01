@@ -103,7 +103,7 @@ export class ProductsService {
   }
 
   // return all products for single user
-  async getProductsbyUser(userId: string, page: number, limit: number, country?: string) {
+  async getProductsbyUser(userId: string, page: number, limit: number, country?: string, category?: string) {
     const idCast = new mongoose.Types.ObjectId(userId)
     const query: any = {
       user: idCast,
@@ -112,6 +112,10 @@ export class ProductsService {
 
     if (country) {
       query.country = { $in: [country] }
+    }
+
+    if (category) {
+      query.category = category;
     }
 
     const itemsCount = await this.productModel.countDocuments(query)

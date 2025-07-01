@@ -523,6 +523,7 @@ export class UsersService {
       throw new NotFoundException('Usuario no encontrado')
     }
 
+    // @ts-ignore
     user.paypalAccount = updatePayplaDto.paypalAccount
     return user.save()
   }
@@ -535,6 +536,7 @@ export class UsersService {
       throw new NotFoundException('Usuario no encontrado')
     }
 
+    // @ts-ignore
     user.paypalAccount = null
     return user.save()
   }
@@ -550,7 +552,8 @@ export class UsersService {
     }
 
     return {
-      account: user.paypalAccount
+      // @ts-ignore
+      account: user?.paypalAccount
     }
   }
 
@@ -647,7 +650,7 @@ export class UsersService {
     const savedUser = await newUser.save();
 
     if (user.accountType === 'business') {
-      const wallet = await this.walletService.createWallet(savedUser._id, {
+      const wallet = await this.walletService.createWallet(savedUser._id as string, {
         totalEarned: 0,
         availableBalance: 0,
         pendingBalance: 0,
@@ -658,7 +661,7 @@ export class UsersService {
         bankAccounts: [],
       });
 
-      savedUser.walletId = wallet._id;
+      savedUser.walletId = wallet._id as string
       await savedUser.save();
     }
 

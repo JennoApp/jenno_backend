@@ -16,7 +16,19 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "types": [
+      "node",
+      "jest",
+      "express",
+      "body-parser",
+      "multer",
+      "cors",
+      "socket.io",
+      "passport",
+      "passport-local",
+      "jsonwebtoken"
+    ],
   },
   "include": [
     "src/**/*.ts",
