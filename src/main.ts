@@ -12,7 +12,7 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService)
-  const port = configService.get('PORT') || 3000
+  const port = configService.get('PORT') || 4000
 
   // Crear y configurar adaptador para WebSocket
   class CustomIoAdapter extends IoAdapter {
@@ -23,6 +23,7 @@ async function bootstrap() {
           origin: [
             'https://jenno-client.vercel.app',
             'https://jenno.com.co',
+            'http://localhost:3000',
           ],
           methods: ['GET', 'POST'],
           credentials: true,
@@ -55,10 +56,10 @@ async function bootstrap() {
     next();
   })
 
-  app.use((req, res, next) => {
-    console.log('Request Headers:', req.headers);
-    next();
-  });
+  // app.use((req, res, next) => {
+  //   console.log('Request Headers:', req.headers);
+  //   next();
+  // });
 
 
   app.enableCors({
@@ -66,6 +67,7 @@ async function bootstrap() {
       const allowedOrigins = [
         'https://jenno-client.vercel.app',
         'https://www.jenno.com.co',
+        'http://localhost:5173',
         'redis://default:AUVPAAIjcDEzYzkxNjY1YjkyMTM0OGU3OTE4ZDQ0Yzc4MDFkZjlhZHAxMA@wondrous-leopard-17743.upstash.io:6379'
       ]
 

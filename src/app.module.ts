@@ -19,7 +19,7 @@ import { BullModule } from '@nestjs/bullmq'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ['.env.local', '.env'],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -43,9 +43,9 @@ import { BullModule } from '@nestjs/bullmq'
 
           return delay
         },
-        tls: {
-          rejectUnauthorized: false
-        }
+        // tls: {
+        //   rejectUnauthorized: false
+        // }
       },
 
       defaultJobOptions: {

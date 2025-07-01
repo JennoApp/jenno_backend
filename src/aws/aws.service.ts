@@ -36,6 +36,10 @@ export class AwsService {
     // Generar un UUID para el nombre del archivo
     const fileId = uuidv4()
     const extension = file.originalname.split('.').pop()
+    const env = this.configService.get<string>('NODE_ENV') || 'production';
+
+    const baseFolder = env === 'development' ? 'test-images' : '';
+
     let folder: string
 
     switch (type) {
@@ -59,7 +63,8 @@ export class AwsService {
     }
 
 
-    const key = `${folder}/${fileId}.${extension}`;
+    const keyPrefix = baseFolder ? `${baseFolder}/${folder}` : folder;
+    const key = `${keyPrefix}/${fileId}.${extension}`;
     const uploadParams = {
       Bucket: this.bucketName,
       Key: key,
