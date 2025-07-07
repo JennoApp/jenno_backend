@@ -109,6 +109,25 @@ export const ProductSchema = new Schema({
     type: [String],
     default: []
   },
+
+  // politicas de devolución y cambio
+  returnPolicy: {
+    acceptsReturns: { type: Boolean, default: true },
+    acceptsExchanges: { type: Boolean, default: true },
+    maxDays: { type: Number, default: 15 },
+    restockingFee: { type: Number, default: 0 }, // %
+    exchangeShippingCoveredBy: {
+      type: String,
+      enum: ['buyer', 'seller'],
+      default: 'buyer'
+    },
+    conditions: {
+      mustBeUnopened: { type: Boolean, default: false },
+      mustIncludeOriginalPackaging: { type: Boolean, default: true }
+    },
+    instructions: { type: String } // texto libre del vendedor
+  }
+
 }, {
   timestamps: true
 })

@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common'
 import { HttpModule } from '@nestjs/axios'
-import { ShippingDhlService } from './shipping-dhl.service'
+import { EnviaService } from './envia.service'
+import { EnviaController } from './envia.controller'
 
 @Module({
   imports: [HttpModule],
-  providers: [ShippingDhlService]
+  controllers: [EnviaController],
+  providers: [EnviaService]
 })
 
 export class ShippingModule {}

@@ -13,6 +13,7 @@ import { MailsModule } from './mails/mails.module'
 import { MarketingModule } from './marketing/marketing.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { BullModule } from '@nestjs/bullmq'
+import { ShippingModule } from './shipping/shipping.module';
 
 
 @Module({
@@ -66,6 +67,7 @@ import { BullModule } from '@nestjs/bullmq'
     WebSocketModule,
     MailsModule,
     MarketingModule,
+    ShippingModule
   ],
   controllers: [AppController],
   providers: [],

@@ -67,7 +67,8 @@ export const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Cart'
   }],
-  // Shipping info
+
+  // Dirección de envío del cliente
   shippingInfo: {
     completeName: String,
     document: Number,
@@ -78,6 +79,20 @@ export const UserSchema = new Schema({
     postalCode: String,
     phoneNumber: Number
   },
+  // Dirección de recogida/envío del vendedor (solo si es negocio)
+  pickupAddress: {
+    contactName: String,
+    phoneNumber: String,
+    country: String,
+    state: String,
+    city: String,
+    postalCode: String,
+    address: String
+  },
+
+  // Transportadoras aceptadas por el vendedor
+  carriersAllowed: [], // Ej: ['envia', 'interrapidisimo']
+
   // Orders
   orders: [{
     type: Schema.Types.ObjectId,

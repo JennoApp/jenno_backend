@@ -708,4 +708,24 @@ export class UsersService {
     };
   }
 
+  async updatePickupSettings(userId: string, data: any) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    user.pickupAddress = data.pickupAddress || user.pickupAddress;
+    user.carriersAllowed = data.carriersAllowed || user.carriersAllowed;
+
+    await user.save();
+    return { message: 'Configuración de envío del vendedor actualizada' };
+  }
+
+  async getPickupSettings(userId: string) {
+    const user = await this.userModel.findById(userId).select('pickupAddress carriersAllowed');
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    return {
+      pickupAddress: user.pickupAddress,
+      carriersAllowed: user.carriersAllowed,
+    };
+  }
 }

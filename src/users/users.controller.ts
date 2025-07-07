@@ -86,6 +86,7 @@ export class UsersController {
     return this.usersService.getShippingInfo(userId)
   }
 
+
   @Post()
   createUser(@Body() user: any) {
     return this.usersService.createUser(user)
@@ -227,5 +228,17 @@ export class UsersController {
   @Post('/google/login')
   async loginWithGoogle(@Body('idToken') idToken: string) {
     return this.usersService.loginWithGoogle(idToken);
+  }
+
+
+  // Shipping Settings
+  @Get('shipping-settings/:userId')
+  async getPickup(@Param('userId') userId: string) {
+    return await this.usersService.getPickupSettings(userId);
+  }
+
+  @Post('shipping-settings/:userId')
+  async updatePickup(@Param('userId') userId: string, @Body() body: any) {
+    return await this.usersService.updatePickupSettings(userId, body);
   }
 }
