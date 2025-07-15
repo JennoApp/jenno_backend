@@ -15,4 +15,6 @@ export interface User extends Document {
   walletId: string,
   notifications: [],
   country: string,
+  pickupAddress: {},
+  carriersAllowed: [],
 }
