@@ -150,4 +150,39 @@ export class OrdersController {
 
     return updateOrder
   }
+
+
+  /**
+   * Cliente solicita devolución o cambio
+   */
+  @Put('return-request/:orderId')
+  async requestReturnOrExchange(
+    @Param('orderId') orderId: string,
+    @Body() body: { type: 'refund' | 'exchange'; reason: string; exchangeProductId?: string }
+  ) {
+    const rr = await this.ordersService.requestReturnOrExchange(orderId, body);
+    return { message: 'Solicitud enviada', returnRequest: rr };
+  }
+
+
+  /**
+   * Vendedor aprueba o rechaza la solicitud
+   */
+  @Put('return-request/:orderId/decision')
+  async decideReturn(
+    @Param('orderId') orderId: string,
+    @Body() body: { approve: boolean }
+  ) {
+    const rr = await this.ordersService.decideReturn(orderId, body.approve);
+    return { message: body.approve ? 'Aprobada' : 'Rechazada', returnRequest: rr };
+  }
+
+  /**
+   * Marcar la devolución/cambio como completada
+   */
+  @Put('return-request/:orderId/complete')
+  async completeReturn(@Param('orderId') orderId: string) {
+    const order = await this.ordersService.completeReturn(orderId);
+    return { message: 'Solicitud completada', order };
+  }
 }

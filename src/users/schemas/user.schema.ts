@@ -91,7 +91,7 @@ export const UserSchema = new Schema({
   },
 
   // Transportadoras aceptadas por el vendedor
-  carriersAllowed: [], // Ej: ['envia', 'interrapidisimo']
+  carriersAllowed: [],
 
   // Orders
   orders: [{
