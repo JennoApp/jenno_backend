@@ -3,10 +3,8 @@
 /node_modules
 .env
 .env.local
-<<<<<<< HEAD
 !.env.example
-=======
->>>>>>> 09de067fce0dfbdb1cb9f17b46120109c4271e03
+
 
 # Logs
 logs
