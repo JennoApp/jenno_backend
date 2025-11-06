@@ -1,11 +1,15 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { UsersService } from "../users/users.service";
 import { GoogleAdsApi } from 'google-ads-api'
+import axios from "axios";
 
 @Injectable()
 export class MarketingService {
   private googleAdsClient: GoogleAdsApi;
+  private readonly metaBaseUrl: string;
+  private readonly MetaAccessToken: string;
+  private readonly MetaAdAccountId: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -16,6 +20,11 @@ export class MarketingService {
       client_secret: this.config.get('GOOGLE_CLIENT_SECRET'),
       developer_token: this.config.get('GOOGLE_DEVELOPER_TOKEN'),
     })
+
+    const MetaGraphVersion = this.config.get('META_GRAPH_VERSION');
+    this.MetaAccessToken = this.config.get('META_ACCESS_TOKEN');
+    this.MetaAdAccountId = this.config.get('META_AD_ACCOUNT_ID');
+    this.metaBaseUrl = `https://graph.facebook.com/${MetaGraphVersion}`;
   }
 
   getFrontendRedirectUrl(): string {
@@ -97,4 +106,45 @@ export class MarketingService {
     const accounts = await customer.query(query);
     return accounts;
   }
+
+
+  /// META ADS ///
+
+  async getAdAccountInfo() {
+      try {
+          const url = `${this.metaBaseUrl}/${this.MetaAdAccountId}`;
+          const params = {
+              fields: 'id,name,account_status,currency,timezone_name',
+              access_token: this.MetaAccessToken,
+          }
+
+          const { data } = await axios.get(url, { params });
+          return data;
+
+      } catch (error) {
+          throw new HttpException(
+              error.message,
+              HttpStatus.BAD_REQUEST
+          );
+      }
+  }
+
+
+  async getCampaigns() {
+      try {
+        const url = `${this.metaBaseUrl}/${this.MetaAdAccountId}/campaigns`;
+        const params = {
+          fields: 'id,name,status,effective_status',
+          access_token: this.MetaAccessToken,
+        };
+
+        const { data } = await axios.get(url, { params });
+        return data;
+      } catch (error) {
+        throw new HttpException(
+          error.response?.data || 'Error fetching campaigns',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
 }

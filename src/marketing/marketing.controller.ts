@@ -34,4 +34,14 @@ export class MarketingController {
     const userId = req.user.userId
     return this.marketingService.getMarkteingGoogleStatus(userId);
   }
+
+  @Get('metaAccount')
+  getMetaAdAccountInfo() {
+      return this.marketingService.getAdAccountInfo()
+  }
+
+  @Get('metaCampaigns')
+  getMetaCampaigns() {
+      return this.marketingService.getCampaigns()
+  }
 }
