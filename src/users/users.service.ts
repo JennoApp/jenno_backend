@@ -1,17 +1,23 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './interfaces/User';
 import { CreateUserDto } from './dto/createuser.dto';
 import * as bcrypt from 'bcrypt';
 import { PaginatedDto } from './dto/paginated.dto';
-import { WalletService } from '../wallet/wallet.service'
+import { WalletService } from '../wallet/wallet.service';
 import { AwsService } from 'src/aws/aws.service';
 import { BankAccountDto } from '../wallet/dto/bankaccount.dto';
-import { JwtService } from '@nestjs/jwt'
-import { ConfigService } from "@nestjs/config";
-import { OAuth2Client } from 'google-auth-library'
-
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
 export class UsersService {
@@ -22,9 +28,9 @@ export class UsersService {
     private readonly config: ConfigService,
     readonly walletService: WalletService,
     private awsService: AwsService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {
-    this.googleClient = new OAuth2Client(this.config.get('GOOGLE_CLIENT_ID'))
+    this.googleClient = new OAuth2Client(this.config.get('GOOGLE_CLIENT_ID'));
   }
 
   async getUsers() {
@@ -32,25 +38,28 @@ export class UsersService {
   }
 
   async getUser(id: string) {
-    return await this.userModel.findById(id)
+    return await this.userModel.findById(id);
   }
 
   async getUserId(username: string) {
-    const user = await this.userModel.findOne({ username }).select('_id').exec()
+    const user = await this.userModel
+      .findOne({ username })
+      .select('_id')
+      .exec();
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado')
+      throw new NotFoundException('Usuario no encontrado');
     }
 
     return {
-      id: user._id
-    }
+      id: user._id,
+    };
   }
 
   async getUsername(id: string) {
-    const { username } = await this.userModel.findById(id)
+    const { username } = await this.userModel.findById(id);
     return {
-      username
-    }
+      username,
+    };
   }
 
   async getUserByEmail(email: string) {
@@ -59,18 +68,28 @@ export class UsersService {
 
   async getProfileImg(id: string) {
     try {
-      return await this.userModel
-        .findById(id)
-        .select(['profileImg'])
+      return await this.userModel.findById(id).select(['profileImg']);
     } catch (error) {
-      throw new Error(`Error al buscar la imagen de perfil del usuario: ${error.message}`)
+      throw new Error(
+        `Error al buscar la imagen de perfil del usuario: ${error.message}`,
+      );
     }
   }
 
-
   async createUser(user: CreateUserDto) {
     try {
-      const { username, displayname, email, name, lastname, taxid, password, accountType, currency, country } = user;
+      const {
+        username,
+        displayname,
+        email,
+        name,
+        lastname,
+        taxid,
+        password,
+        accountType,
+        currency,
+        country,
+      } = user;
       if (!password || password.length < 6) {
         return {
           message: 'Password must be at least 6 characters',
@@ -88,26 +107,34 @@ export class UsersService {
 
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      let newUser
+      let newUser;
+
+      // ------------------------------
+      // 👤 PERSONAL
+      // ------------------------------
       if (accountType === 'personal') {
         newUser = new this.userModel({
           username: username,
           displayname: displayname,
-          profileImg: "",
+          profileImg: '',
           email: email,
-          bio: "",
+          bio: '',
           password: hashedPassword,
           accountType: accountType,
           country: country,
-          authProvider: 'local'
+          authProvider: 'local',
         });
-      } else if (accountType === 'business') {
+      }
+      // ------------------------------
+      // 🏢 BUSINESS
+      // ------------------------------
+      else if (accountType === 'business') {
         newUser = new this.userModel({
           username: username,
           displayname: displayname,
-          profileImg: "",
+          profileImg: '',
           email: email,
-          bio: "",
+          bio: '',
           name: name,
           lastname: lastname,
           taxid: taxid,
@@ -117,11 +144,40 @@ export class UsersService {
           authProvider: 'local',
         });
       }
+      // ------------------------------
+      // 🛡️ ADMINISTRATOR (super admin de Jenno)
+      // ------------------------------
+      else if (accountType === 'administrator') {
+        newUser = new this.userModel({
+          username,
+          displayname,
+          profileImg: '',
+          email,
+          bio: 'Jenno Administrator',
+          password: hashedPassword,
+          accountType,
+          country,
+          authProvider: 'local',
+          // No necesita wallet, ni tienda, ni metodos extra
+        });
+      }
 
+      // Si por alguna razón no cae en ninguno
+      if (!newUser) {
+        return {
+          message: 'Invalid account type',
+          status: 400,
+        };
+      }
+
+      // Guardar usuario
       const createUser = await newUser.save();
 
+      // ------------------------------
+      // Crear wallet solo para BUSINESS
+      // ------------------------------
       if (accountType === 'business') {
-        console.log('Creating wallet for user...')
+        console.log('Creating wallet for user...');
         const wallet = await this.walletService.createWallet(createUser._id, {
           totalEarned: 0,
           availableBalance: 0,
@@ -131,10 +187,10 @@ export class UsersService {
           withdrawalTotalBalance: 0,
           withdrawals: [],
           bankAccounts: [],
-        })
+        });
 
-        createUser.walletId = wallet._id
-        await createUser.save()
+        createUser.walletId = wallet._id;
+        await createUser.save();
       }
 
       return createUser;
@@ -146,30 +202,37 @@ export class UsersService {
 
   // busca un usuario con el tipo de cuanta business
   async findOne(username: string): Promise<any | null> {
-    return await this.userModel.findOne({ username, accountType: "business" })
+    return await this.userModel.findOne({ username, accountType: 'business' });
   }
 
   findById(userId: string) {
-    return this.userModel.findById(userId)
+    return this.userModel.findById(userId);
   }
 
   // busca un usuario con el tipo de cuenta personal
   async findOnePersonal(userId: string): Promise<any | null> {
-    return await this.userModel.findOne({ _id: userId, accountType: "personal" })
+    return await this.userModel.findOne({
+      _id: userId,
+      accountType: 'personal',
+    });
   }
 
-
-  async updateUserImg(userId: string, newProfileImgUrl: string): Promise<any | null> {
+  async updateUserImg(
+    userId: string,
+    newProfileImgUrl: string,
+  ): Promise<any | null> {
     try {
       // Validar que los parámetros no estén vacíos
       if (!userId || !newProfileImgUrl) {
-        throw new BadRequestException('UserId y newProfileImgUrl son requeridos');
+        throw new BadRequestException(
+          'UserId y newProfileImgUrl son requeridos',
+        );
       }
 
       // Buscar el usuario
-      const user = await this.userModel.findById(userId)
+      const user = await this.userModel.findById(userId);
       if (!user) {
-        throw new NotFoundException('Usuario no encontrado')
+        throw new NotFoundException('Usuario no encontrado');
       }
 
       try {
@@ -189,7 +252,7 @@ export class UsersService {
       // }
 
       // Actualizar la Url de la imagen de perfil
-      user.profileImg = newProfileImgUrl
+      user.profileImg = newProfileImgUrl;
 
       // return user.save()
 
@@ -198,10 +261,13 @@ export class UsersService {
       return updatedUser;
     } catch (error) {
       console.error('Error en updateUserImg:', error);
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error; // Re-lanzar errores específicos
       }
-      throw new Error("Error al actualizar la image de perfil del usuario")
+      throw new Error('Error al actualizar la image de perfil del usuario');
     }
   }
 
@@ -209,25 +275,33 @@ export class UsersService {
   async updateUser(userId: string, user: any) {
     try {
       // Verificar si el username ya está en uso por otro usuario
-      const existingUser = await this.userModel.findOne({ username: user.username });
+      const existingUser = await this.userModel.findOne({
+        username: user.username,
+      });
       if (existingUser && existingUser._id.toString() !== userId) {
-        throw new Error(`El nombre de usuario "${user.username}" ya está en uso.`);
+        throw new Error(
+          `El nombre de usuario "${user.username}" ya está en uso.`,
+        );
       }
 
-      const userInfo = await this.userModel.findByIdAndUpdate(userId, {
-        username: user.username,
-        displayname: user.displayname,
-        email: user.email,
-        bio: user.bio,
-        country: user.country,
-        legalname: user.legalname,
-        legallastname: user.legallastname,
-        taxid: user.taxid
-      }, { new: true })
+      const userInfo = await this.userModel.findByIdAndUpdate(
+        userId,
+        {
+          username: user.username,
+          displayname: user.displayname,
+          email: user.email,
+          bio: user.bio,
+          country: user.country,
+          legalname: user.legalname,
+          legallastname: user.legallastname,
+          taxid: user.taxid,
+        },
+        { new: true },
+      );
 
-      return userInfo
+      return userInfo;
     } catch (err) {
-      throw new Error("Error al actualizar la informacion del usuario")
+      throw new Error('Error al actualizar la informacion del usuario');
     }
   }
 
@@ -235,45 +309,63 @@ export class UsersService {
   async following(customerId: string, userId: string) {
     try {
       // Encuentra el usuario por su Id
-      const user = await this.userModel.findById(userId)
+      const user = await this.userModel.findById(userId);
 
       if (!user) {
-        throw new Error("Usuario no encontrado")
+        throw new Error('Usuario no encontrado');
       }
 
       // Agrega el customerId a la lista de following del usuario
       if (!user.following.includes(customerId)) {
-        user.following.push(customerId)
-        await user.save()
+        user.following.push(customerId);
+        await user.save();
       }
 
       // Encuentra el cliente por su Id
-      const customer = await this.userModel.findById(customerId)
+      const customer = await this.userModel.findById(customerId);
 
       if (!customer) {
-        throw new Error('Cliente no encontrado')
+        throw new Error('Cliente no encontrado');
       }
 
       // Agregar el userId a la lista de followers del cliente
       if (!customer.followers.includes(userId)) {
-        customer.followers.push(userId)
-        await customer.save()
+        customer.followers.push(userId);
+        await customer.save();
       }
 
-      return user
+      return user;
     } catch (error) {
-      throw new Error(`Error al agregar el customerId y el userId: ${error.message}`)
+      throw new Error(
+        `Error al agregar el customerId y el userId: ${error.message}`,
+      );
     }
   }
 
   async getFollowers(id: string, page: number, limit: number) {
-    const { followers } = await this.userModel.findById(id).limit(limit).skip((page - 1) * limit).exec()
-    const followersCount = await this.userModel.findById(id).countDocuments()
+    const { followers } = await this.userModel
+      .findById(id)
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .exec();
+    const followersCount = await this.userModel.findById(id).countDocuments();
 
-    return new PaginatedDto(followers, page, limit, followersCount)
+    return new PaginatedDto(followers, page, limit, followersCount);
   }
 
-  async updateShippingInfo(userId, info: { completeName, document, country, address, city, state, postalCode, phoneNumber }) {
+  async updateShippingInfo(
+    userId,
+    info: {
+      completeName;
+      document;
+      country;
+      address;
+      city;
+      state;
+      postalCode;
+      phoneNumber;
+    },
+  ) {
     const shippingInfo = {
       completeName: info.completeName,
       document: info.document,
@@ -282,19 +374,19 @@ export class UsersService {
       city: info.city,
       state: info.state,
       postalCode: info.postalCode,
-      phoneNumber: info.phoneNumber
-    }
+      phoneNumber: info.phoneNumber,
+    };
 
     try {
       const updateInfo = await this.userModel.findByIdAndUpdate(
         { _id: userId },
         { $set: { shippingInfo: shippingInfo } },
-        { new: true }
-      )
+        { new: true },
+      );
 
-      return updateInfo
+      return updateInfo;
     } catch (error) {
-      console.error("Error al actualizar usuario:", error)
+      console.error('Error al actualizar usuario:', error);
     }
   }
 
@@ -308,33 +400,32 @@ export class UsersService {
           select: '_id',
           options: {
             limit: limit,
-            skip: (page - 1) * limit
-          }
+            skip: (page - 1) * limit,
+          },
         })
-        .exec()
+        .exec();
 
       if (!salesOrders) {
-        throw new NotFoundException('User not Found')
+        throw new NotFoundException('User not Found');
       }
 
-      const salesOrdersCount = await this.userModel
-        .findById(userId)
-        .populate({
-          path: 'orders',
-          match: { status: { $ne: 'completed' } },
-          select: '_id status createdAt',
-        })
-      const ordersCount = salesOrdersCount?.orders.length
+      const salesOrdersCount = await this.userModel.findById(userId).populate({
+        path: 'orders',
+        match: { status: { $ne: 'completed' } },
+        select: '_id status createdAt',
+      });
+      const ordersCount = salesOrdersCount?.orders.length;
 
-      const orderList = salesOrders.orders.map((order: { _id: string }) => order?._id)
+      const orderList = salesOrders.orders.map(
+        (order: { _id: string }) => order?._id,
+      );
 
+      console.log({ orderList, page, limit, ordersCount });
 
-      console.log({ orderList, page, limit, ordersCount })
-
-      return new PaginatedDto(orderList, page, limit, ordersCount)
+      return new PaginatedDto(orderList, page, limit, ordersCount);
     } catch (error) {
-      console.error('Error to get order List:', error)
-      throw new InternalServerErrorException('Failed to get order List')
+      console.error('Error to get order List:', error);
+      throw new InternalServerErrorException('Failed to get order List');
     }
   }
 
@@ -349,8 +440,8 @@ export class UsersService {
           options: {
             sort: { createdAt: -1 },
             limit: limit,
-            skip: (page - 1) * limit
-          }
+            skip: (page - 1) * limit,
+          },
         })
         .exec();
 
@@ -358,7 +449,9 @@ export class UsersService {
         throw new NotFoundException('User not Found');
       }
 
-      const orderIds = salesOrdersCompleted.orders.map((order: { _id: string }) => order?._id);
+      const orderIds = salesOrdersCompleted.orders.map(
+        (order: { _id: string }) => order?._id,
+      );
 
       const salesOrdersCompletedCount = await this.userModel
         .findById(id)
@@ -366,18 +459,19 @@ export class UsersService {
           path: 'orders',
           match: { status: 'completed' },
           select: '_id status createdAt',
-        })
-      const ordersCount = salesOrdersCompletedCount?.orders.length
+        });
+      const ordersCount = salesOrdersCompletedCount?.orders.length;
 
-      console.log({ orderIds, page, limit, ordersCount })
+      console.log({ orderIds, page, limit, ordersCount });
 
       return new PaginatedDto(orderIds, page, limit, ordersCount);
     } catch (error) {
       console.error('Error retrieving completed orders:', error);
-      throw new InternalServerErrorException('Failed to retrieve completed orders');
+      throw new InternalServerErrorException(
+        'Failed to retrieve completed orders',
+      );
     }
   }
-
 
   async getShopping(id: string, page: number, limit: number) {
     try {
@@ -389,8 +483,8 @@ export class UsersService {
           select: '_id status createdAt',
           options: {
             limit: limit,
-            skip: (page - 1) * limit
-          }
+            skip: (page - 1) * limit,
+          },
         })
         .exec();
 
@@ -398,17 +492,17 @@ export class UsersService {
         throw new NotFoundException('User not Found');
       }
 
-      const totalShoppingCount = await this.userModel
-        .findById(id)
-        .populate({
-          path: 'shopping',
-          match: { status: { $ne: 'completed' } },
-          select: '_id status createdAt',
-        })
+      const totalShoppingCount = await this.userModel.findById(id).populate({
+        path: 'shopping',
+        match: { status: { $ne: 'completed' } },
+        select: '_id status createdAt',
+      });
 
-      const shoppingIds = shoppingOrders.shopping.map((order: { _id: string }) => order?._id);
+      const shoppingIds = shoppingOrders.shopping.map(
+        (order: { _id: string }) => order?._id,
+      );
 
-      const count = totalShoppingCount?.shopping.length
+      const count = totalShoppingCount?.shopping.length;
 
       console.log({ shoppingIds, page, limit, count });
 
@@ -430,16 +524,18 @@ export class UsersService {
           options: {
             sort: { createdAt: -1 },
             limit: limit,
-            skip: (page - 1) * limit
-          }
+            skip: (page - 1) * limit,
+          },
         })
-        .exec()
+        .exec();
 
       if (!shoppingOrdersWithReviews) {
-        throw new NotFoundException('User not Found')
+        throw new NotFoundException('User not Found');
       }
 
-      const shoppingOrdersIds = shoppingOrdersWithReviews.shopping.map((order: { _id: string }) => order?._id);
+      const shoppingOrdersIds = shoppingOrdersWithReviews.shopping.map(
+        (order: { _id: string }) => order?._id,
+      );
 
       const shoppingOrdersCompletedCount = await this.userModel
         .findById(id)
@@ -447,14 +543,21 @@ export class UsersService {
           path: 'shopping',
           match: { status: 'completed' },
           select: '_id status createdAt',
-        })
+        });
 
-      const shoppingOrdersCount = shoppingOrdersCompletedCount?.shopping.length
+      const shoppingOrdersCount = shoppingOrdersCompletedCount?.shopping.length;
 
-      return new PaginatedDto(shoppingOrdersIds, page, limit, shoppingOrdersCount)
+      return new PaginatedDto(
+        shoppingOrdersIds,
+        page,
+        limit,
+        shoppingOrdersCount,
+      );
     } catch (error) {
-      console.error('Error retrieving shopping without review:', error)
-      throw new InternalServerErrorException('Failed to retrieve shopping without review')
+      console.error('Error retrieving shopping without review:', error);
+      throw new InternalServerErrorException(
+        'Failed to retrieve shopping without review',
+      );
     }
   }
 
@@ -470,8 +573,8 @@ export class UsersService {
           options: {
             sort: { createdAt: -1 },
             limit: limit,
-            skip: (page - 1) * limit
-          }
+            skip: (page - 1) * limit,
+          },
         })
         .exec();
 
@@ -480,7 +583,9 @@ export class UsersService {
       }
 
       // Obtener los IDs de las órdenes completadas
-      const completedOrderIds = shoppingOrdersCompletedOrders.shopping.map((order: { _id: string }) => order._id);
+      const completedOrderIds = shoppingOrdersCompletedOrders.shopping.map(
+        (order: { _id: string }) => order._id,
+      );
 
       const shoppingOrdersCompletedCount = await this.userModel
         .findById(id)
@@ -488,97 +593,110 @@ export class UsersService {
           path: 'shopping',
           match: { status: 'completed' },
           select: '_id status createdAt',
-        })
-      const shoppingOrdersCount = shoppingOrdersCompletedCount?.shopping.length
-
+        });
+      const shoppingOrdersCount = shoppingOrdersCompletedCount?.shopping.length;
 
       console.log({ completedOrderIds, page, limit, shoppingOrdersCount });
 
-      return new PaginatedDto(completedOrderIds, page, limit, shoppingOrdersCount);
+      return new PaginatedDto(
+        completedOrderIds,
+        page,
+        limit,
+        shoppingOrdersCount,
+      );
     } catch (error) {
       console.error('Error retrieving completed shopping orders:', error);
-      throw new InternalServerErrorException('Failed to retrieve completed shopping orders');
+      throw new InternalServerErrorException(
+        'Failed to retrieve completed shopping orders',
+      );
     }
   }
 
-
   async getShippingInfo(userId) {
     try {
-      const shippingInfo = await this.userModel.findById(userId).select('shippingInfo')
+      const shippingInfo = await this.userModel
+        .findById(userId)
+        .select('shippingInfo');
       if (!shippingInfo) {
-        throw new Error('Usuario no encontrado')
+        throw new Error('Usuario no encontrado');
       }
 
-      return shippingInfo
+      return shippingInfo;
     } catch (error) {
-      console.log('Error al obtener la informacion de envio:', error)
-      throw error
+      console.log('Error al obtener la informacion de envio:', error);
+      throw error;
     }
   }
 
   // update Paypal Account
-  async updatePaypalAccount(userId: string, updatePayplaDto: { paypalAccount: string }) {
-    const user = await this.userModel.findById(userId)
+  async updatePaypalAccount(
+    userId: string,
+    updatePayplaDto: { paypalAccount: string },
+  ) {
+    const user = await this.userModel.findById(userId);
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado')
+      throw new NotFoundException('Usuario no encontrado');
     }
 
     // @ts-ignore
-    user.paypalAccount = updatePayplaDto.paypalAccount
-    return user.save()
+    user.paypalAccount = updatePayplaDto.paypalAccount;
+    return user.save();
   }
 
   // remove Paypal Account
   async removePaypalAccount(userId: string) {
-    const user = await this.userModel.findById(userId)
+    const user = await this.userModel.findById(userId);
 
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado')
+      throw new NotFoundException('Usuario no encontrado');
     }
 
     // @ts-ignore
-    user.paypalAccount = null
-    return user.save()
+    user.paypalAccount = null;
+    return user.save();
   }
 
   async getPaypalAccount(userId: any) {
     if (!userId) {
-      throw new Error('El Id de usuario es requerido')
+      throw new Error('El Id de usuario es requerido');
     }
 
-    const user = await this.userModel.findById(userId)
+    const user = await this.userModel.findById(userId);
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado')
+      throw new NotFoundException('Usuario no encontrado');
     }
 
     return {
       // @ts-ignore
-      account: user?.paypalAccount
-    }
+      account: user?.paypalAccount,
+    };
   }
-
 
   // Marcar las notificaciones como leidas
   async markNotificationsAsRead(userId: string) {
     if (!userId) {
-      throw new BadRequestException('UserId is required')
+      throw new BadRequestException('UserId is required');
     }
 
     try {
-      const user = await this.userModel.findById(userId)
+      const user = await this.userModel.findById(userId);
 
       if (!user || !Array.isArray(user.notifications)) {
-        throw new BadRequestException('Usuario no encontrado o no tiene notificaciones');
+        throw new BadRequestException(
+          'Usuario no encontrado o no tiene notificaciones',
+        );
       }
 
       // Actualizamos las notificaciones
       const result = await this.userModel.updateOne(
         { _id: userId, 'notifications.read': false },
-        { $set: { 'notifications.$[].read': true } }
-      )
+        { $set: { 'notifications.$[].read': true } },
+      );
 
       if (result.modifiedCount === 0) {
-        throw new BadRequestException('No se encontraron notificaciones no leídas para marcar')
+        throw new BadRequestException(
+          'No se encontraron notificaciones no leídas para marcar',
+        );
       }
 
       return {
@@ -605,7 +723,7 @@ export class UsersService {
       accessToken: string;
       refreshToken: string;
       expiresIn: number; // en segundos
-    }
+    },
   ) {
     const tokenExpiry = new Date(Date.now() + data.expiresIn * 1000);
 
@@ -619,7 +737,7 @@ export class UsersService {
           'marketing.google.tokenExpiry': tokenExpiry,
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -650,25 +768,26 @@ export class UsersService {
     const savedUser = await newUser.save();
 
     if (user.accountType === 'business') {
-      const wallet = await this.walletService.createWallet(savedUser._id as string, {
-        totalEarned: 0,
-        availableBalance: 0,
-        pendingBalance: 0,
-        currency: 'COP',
-        withdrawalPendingBalance: 0,
-        withdrawalTotalBalance: 0,
-        withdrawals: [],
-        bankAccounts: [],
-      });
+      const wallet = await this.walletService.createWallet(
+        savedUser._id as string,
+        {
+          totalEarned: 0,
+          availableBalance: 0,
+          pendingBalance: 0,
+          currency: 'COP',
+          withdrawalPendingBalance: 0,
+          withdrawalTotalBalance: 0,
+          withdrawals: [],
+          bankAccounts: [],
+        },
+      );
 
-      savedUser.walletId = wallet._id as string
+      savedUser.walletId = wallet._id as string;
       await savedUser.save();
     }
 
     return savedUser;
   }
-
-
 
   async loginWithGoogle(idToken: string) {
     const ticket = await this.googleClient.verifyIdToken({
@@ -720,7 +839,9 @@ export class UsersService {
   }
 
   async getPickupSettings(userId: string) {
-    const user = await this.userModel.findById(userId).select('pickupAddress carriersAllowed');
+    const user = await this.userModel
+      .findById(userId)
+      .select('pickupAddress carriersAllowed');
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     return {

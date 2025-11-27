@@ -115,7 +115,7 @@ export const UserSchema = new Schema({
   },
   accountType: {
     type: String,
-    enum: ['personal', 'business'],
+    enum: ['personal', 'business', 'administrator'],
     required: true
   },
   // Wallet
