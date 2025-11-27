@@ -23,6 +23,7 @@ async function bootstrap() {
           origin: [
             'https://jenno-client.vercel.app',
             'https://jenno.com.co',
+            'https://admin.jenno.com.co',
             'http://localhost:3000',
           ],
           methods: ['GET', 'POST'],
@@ -100,4 +101,3 @@ async function bootstrap() {
   console.log(`This application is running on: ${await app.getUrl()}`)
 }
 bootstrap();
-
