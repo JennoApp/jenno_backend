@@ -60,6 +60,20 @@ export class OrdersService {
     return { count };
   }
 
+  async getTotalGMV() {
+    const result = await this.orderModel.aggregate([
+      { $match: { status: "completed" } },
+      {
+        $group: {
+          _id: null,
+          totalGMV: { $sum: { $multiply: ["$product.price", "$amount"] } }
+        }
+      }
+    ]);
+
+    return { totalGMV: result.length > 0 ? result[0].totalGMV : 0 };
+  }
+
   async getTotalRevenue(userId) {
     const result = await this.orderModel.aggregate([
       { $match: { sellerId: userId, status: 'completed' } },

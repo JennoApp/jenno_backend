@@ -36,6 +36,11 @@ export class OrdersController {
     return this.ordersService.countAllCompletedOrders();
   }
 
+  @Get("/gmv/total")
+  getTotalGMV() {
+    return this.ordersService.getTotalGMV();
+  }
+
 
   @Get('numberofsales/:userId')
   getNumberOfSales(@Param('userId') userId) {
