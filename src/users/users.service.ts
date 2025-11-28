@@ -41,6 +41,10 @@ export class UsersService {
     return await this.userModel.findById(id);
   }
 
+  async countUsersByAccountType(accountType: 'personal' | 'business') {
+    return await this.userModel.countDocuments({ accountType });
+  }
+
   async getUserId(username: string) {
     const user = await this.userModel
       .findOne({ username })
