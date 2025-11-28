@@ -42,7 +42,10 @@ export class UsersService {
   }
 
   async countUsersByAccountType(accountType: 'personal' | 'business') {
-    return await this.userModel.countDocuments({ accountType });
+    const count = await this.userModel.countDocuments({ accountType });
+    return {
+      count,
+    };
   }
 
   async getUserId(username: string) {
