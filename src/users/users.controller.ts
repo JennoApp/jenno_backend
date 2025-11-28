@@ -21,15 +21,16 @@ export class UsersController {
     return this.usersService.getUsers();
   }
 
+  @Get('/count/ByAccountType')
+  countByAccountType(@Query('accountType') accountType: "personal" | "business") {
+      return this.usersService.countUsersByAccountType(accountType);
+  }
+
   @Get(':id')
   getUser(@Param('id') id) {
     return this.usersService.getUser(id)
   }
 
-  @Get('countByAccountType')
-  countByAccountType(@Query('accountType') accountType: "personal" | "business") {
-      return this.usersService.countUsersByAccountType(accountType);
-  }
 
   @Get('/getUserId/:username')
   getUserId(@Param('username') username: string) {
