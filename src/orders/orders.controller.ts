@@ -31,6 +31,12 @@ export class OrdersController {
     return this.ordersService.getTotalRevenue(userid)
   }
 
+  @Get('/count/completed')
+  countAllCompleted() {
+    return this.ordersService.countAllCompletedOrders();
+  }
+
+
   @Get('numberofsales/:userId')
   getNumberOfSales(@Param('userId') userId) {
     return this.ordersService.getNumberOfSales(userId)

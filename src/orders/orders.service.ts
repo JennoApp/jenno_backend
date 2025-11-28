@@ -55,6 +55,11 @@ export class OrdersService {
     return savedOrder
   }
 
+  async countAllCompletedOrders() {
+    const count = await this.orderModel.countDocuments({ status: 'completed' });
+    return { count };
+  }
+
   async getTotalRevenue(userId) {
     const result = await this.orderModel.aggregate([
       { $match: { sellerId: userId, status: 'completed' } },
