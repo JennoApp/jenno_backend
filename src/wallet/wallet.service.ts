@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, PipelineStage } from "mongoose";
 import { Wallet } from './interfaces/Wallet'
 import { WalletDto } from './dto/wallet.dto'
 import { BankAccountDto } from "./dto/bankaccount.dto";
@@ -37,7 +37,7 @@ export class WalletService {
     const wallet = new this.walletModel({ ...data, userId: userId })
     return await wallet.save()
   }
-  
+
 
   async updatePendingBalance(userId: string, balance: number) {
     try {
@@ -281,29 +281,65 @@ export class WalletService {
   ): Promise<PaginatedDto<any>> {
     const skip = (page - 1) * limit;
 
-    // agregación con facet para contar y paginar
-    const [agg] = await this.walletModel.aggregate([
-      { $unwind: '$withdrawals' },
-      { $match: { 'withdrawals.status': 'pending' } },
-      { $sort: { 'withdrawals.requestDate': -1 } },
-      {
-        $facet: {
-          items: [
-            { $skip: skip },
-            { $limit: limit },
-            {
-              $project: {
-                _id: 0,
-                walletId: '$_id',
-                userId: '$userId',
-                withdrawal: '$withdrawals'
-              }
+    // 1. Desanidar retiros, 2. Unir bankAccounts
+      const aggregationPipeline: PipelineStage[] = [
+        { $unwind: '$withdrawals' },
+        { $match: { 'withdrawals.status': 'pending' } },
+
+        // ** PASO CLAVE 1: Adjuntar la información bancaria **
+        {
+          $addFields: {
+            // Busca el objeto completo de la cuenta bancaria en bankAccounts
+            // donde el _id de la cuenta coincida con el bankId del retiro.
+            bankDetails: {
+              $arrayElemAt: [
+                {
+                  $filter: {
+                    input: '$bankAccounts',
+                    as: 'bank',
+                    cond: { $eq: ['$$bank._id', '$withdrawals.bankId'] }
+                  }
+                },
+                0 // Tomamos el primer (y único) resultado
+              ]
             }
-          ],
-          totalCount: [{ $count: 'count' }]
+          }
+        },
+
+        { $sort: { 'withdrawals.requestDate': -1 } },
+
+        // ** PASO CLAVE 2: Proyectar y Aplanar los datos **
+        {
+          $project: {
+            _id: 0,
+            withdrawalId: '$withdrawals._id', // ID del retiro individual
+            walletId: '$_id', // ID de la wallet (para "Tienda")
+            userId: '$userId',
+            amount: '$withdrawals.amount',
+            status: '$withdrawals.status',
+            requestDate: '$withdrawals.requestDate',
+
+            // Proyectamos los datos bancarios aplanados
+            bankAccountNumber: '$bankDetails.accountNumber',
+            bankAccountName: '$bankDetails.name',
+            bankAccountType: '$bankDetails.bankType',
+          }
         }
-      }
-    ]);
+      ];
+
+      // 3. Agregar $facet para paginación
+      const [agg] = await this.walletModel.aggregate([
+        ...aggregationPipeline,
+        {
+          $facet: {
+            items: [
+              { $skip: skip },
+              { $limit: limit },
+            ],
+            totalCount: [{ $count: 'count' }]
+          }
+        }
+      ]);
 
     const items = agg.items;
     const itemCount = agg.totalCount[0]?.count ?? 0;
