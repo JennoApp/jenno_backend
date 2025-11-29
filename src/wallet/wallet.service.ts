@@ -304,7 +304,7 @@ export class WalletService {
                 $filter: {
                   input: '$bankAccounts',
                   as: 'bank',
-                  cond: { $eq: ['$$bank._id', '$withdrawals.bankId'] },
+                  cond: { $eq: ['$withdrawals.bankId', { $toString: '$$bank._id' }] },
                 },
               },
               0,
