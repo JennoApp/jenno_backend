@@ -1,24 +1,35 @@
-import { Body, Controller, Param, Post, Get, Req, UseGuards, HttpException, Patch, Delete, Query } from "@nestjs/common";
-import { WalletService } from './wallet.service'
-import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
-import { PaypalService } from "./paypal.service";
-import { BankAccountDto } from "./dto/bankaccount.dto";
-import { PaginatedDto } from "./dto/paginated.dto";
-
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Get,
+  Req,
+  UseGuards,
+  HttpException,
+  Patch,
+  Delete,
+  Query,
+} from '@nestjs/common';
+import { WalletService } from './wallet.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { PaypalService } from './paypal.service';
+import { BankAccountDto } from './dto/bankaccount.dto';
+import { PaginatedDto } from './dto/paginated.dto';
 
 @Controller('wallet')
 export class WalletControler {
   constructor(
     private walletService: WalletService,
-    private paypalService: PaypalService
-  ) { }
+    private paypalService: PaypalService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('getwithdrawalBalances')
   getWithdrawalBalances(@Req() req) {
     const userId = req.user['userId'];
     if (!userId) {
-      throw new HttpException('User not authenticated', 401)
+      throw new HttpException('User not authenticated', 401);
     }
 
     return this.walletService.getWithdrawalBalances(userId);
@@ -28,7 +39,7 @@ export class WalletControler {
   async getWithdrawalById(
     @Param('walletId') walletId: string,
     @Query('page') page?: string,
-    @Query('limit') limit?: string
+    @Query('limit') limit?: string,
   ): Promise<PaginatedDto<any>> {
     const p = Math.max(1, parseInt(page) || 1);
     const l = Math.max(1, parseInt(limit) || 10);
@@ -36,43 +47,63 @@ export class WalletControler {
   }
 
   /**
-  * GET /wallet/withdrawals/pending?page=&limit=
-  * Retiros pendientes de todas las wallets (admin only), paginados.
-  */
+   * GET /wallet/withdrawals/pending?page=&limit=
+   * Retiros pendientes de todas las wallets (admin only), paginados.
+   */
   @Get('withdrawals/pending')
   async listPendingWithdrawals(
     @Query('page') page?: string,
-    @Query('limit') limit?: string
+    @Query('limit') limit?: string,
   ): Promise<PaginatedDto<any>> {
     const p = Math.max(1, parseInt(page) || 1);
     const l = Math.max(1, parseInt(limit) || 20);
     return this.walletService.getPendingWithdrawals(p, l);
   }
 
+  /**
+   * PATCH /wallet/withdrawals/:id/status
+   * Actualiza el estado de un retiro (completed/rejected)
+   */
+  @Patch('withdrawals/:id/status')
+  @UsePipes(new ValidationPipe()) // Valida que el status sea correcto
+  async updateWithdrawalStatus(
+    @Param('id') withdrawalId: string,
+    @Body() updateDto: UpdateWithdrawalStatusDto,
+  ) {
+    return this.walletService.updateWithdrawalStatus(
+      withdrawalId,
+      updateDto.status,
+    );
+  }
+
   @Get('getPaypalPayoutDetails/:batchId')
   getPaypalPayoutDetails(@Param('batchId') batchId) {
-    return this.paypalService.getPaypalDetails(batchId)
+    return this.paypalService.getPaypalDetails(batchId);
   }
 
   @Get(':walletId')
   getWalletById(@Param('walletId') walletId) {
-    return this.walletService.getWalletById(walletId)
+    return this.walletService.getWalletById(walletId);
   }
 
   @Post(':userid')
   createWallet(@Param('userid') userid, @Body() wallet) {
-    return this.walletService.createWallet(userid, wallet)
+    return this.walletService.createWallet(userid, wallet);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('withdraw/:accountId')
-  async requestWithdrawal(@Param('accountId') accountId, @Req() req, @Body('amount') amount: number) {
+  async requestWithdrawal(
+    @Param('accountId') accountId,
+    @Req() req,
+    @Body('amount') amount: number,
+  ) {
     console.log('Headers:', req.headers);
 
-    const user = req.user
-    const userId = user.userId
+    const user = req.user;
+    const userId = user.userId;
     if (!user || !userId) {
-      throw new HttpException('User not authenticated', 401)
+      throw new HttpException('User not authenticated', 401);
     }
 
     if (amount <= 0) {
@@ -83,14 +114,16 @@ export class WalletControler {
     const updatedWallet = await this.walletService.requestWithdrawal(
       userId,
       accountId,
-      amount
+      amount,
     );
 
     return {
       message: 'Retiro solicitado exitosamente',
       withdrawalPendingBalance: updatedWallet.withdrawalPendingBalance,
       withdrawalTotalBalance: updatedWallet.withdrawalTotalBalance,
-      withdrawals: updatedWallet.withdrawals.filter(w => w.status === 'pending')
+      withdrawals: updatedWallet.withdrawals.filter(
+        (w) => w.status === 'pending',
+      ),
     };
   }
 
@@ -111,7 +144,7 @@ export class WalletControler {
   async updateBankAccount(
     @Req() req,
     @Param('accountId') accountId: string,
-    @Body() dto: BankAccountDto
+    @Body() dto: BankAccountDto,
   ) {
     const userId = req.user['userId'];
     if (!userId) {
@@ -123,10 +156,7 @@ export class WalletControler {
   // Eliminar cuenta bancaria
   @UseGuards(JwtAuthGuard)
   @Delete('bankAccounts/delete/:accountId')
-  async deleteBankAccount(
-    @Req() req,
-    @Param('accountId') accountId: string
-  ) {
+  async deleteBankAccount(@Req() req, @Param('accountId') accountId: string) {
     const userId = req.user['userId'];
     if (!userId) {
       throw new HttpException('User not authenticated', 401);

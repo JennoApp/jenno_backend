@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 import { Wallet } from './interfaces/Wallet';
 import { WalletDto } from './dto/wallet.dto';
 import { BankAccountDto } from './dto/bankaccount.dto';
 import { PaginatedDto } from './dto/paginated.dto';
+import { WithdrawalStatus } from './dto/update-withdrawal-status.dto';
 
 @Injectable()
 export class WalletService {
@@ -290,12 +291,12 @@ export class WalletService {
   ): Promise<PaginatedDto<any>> {
     const skip = (page - 1) * limit;
 
-    // 1. Desanidar retiros, 2. Unir bankAccounts
+    // Desanidar retiros, Unir bankAccounts
     const aggregationPipeline: PipelineStage[] = [
       { $unwind: '$withdrawals' },
       { $match: { 'withdrawals.status': 'pending' } },
 
-      // 1. Adjuntar la información bancaria (funciona)
+      // Adjuntar la información bancaria (funciona)
       {
         $addFields: {
           bankDetails: {
@@ -313,9 +314,9 @@ export class WalletService {
         },
       },
 
+      // Ordenar por fecha de solicitud ascendente
       { $sort: { 'withdrawals.requestDate': 1 } },
 
-      // 2. PROYECCIÓN CORREGIDA: Incluir todos los campos anidados y bankDetails
       {
         $project: {
           _id: 0,
@@ -334,7 +335,7 @@ export class WalletService {
       },
     ];
 
-    // 3. Agregar $facet para paginación
+    // Agregar $facet para paginación
     const [agg] = await this.walletModel.aggregate([
       ...aggregationPipeline,
       {
@@ -350,4 +351,72 @@ export class WalletService {
 
     return new PaginatedDto(items, page, limit, itemCount);
   }
+
+  /**
+     * Actualiza el estado de un retiro (withdrawalId) y ajusta los saldos:
+     * - 'completed': reduce withdrawalPendingBalance (sale del sistema)
+     * - 'rejected': mueve de withdrawalPendingBalance a availableBalance (se devuelve)
+     */
+    async updateWithdrawalStatus(withdrawalId: string, newStatus: WithdrawalStatus) {
+      // Buscar la wallet que contiene este retiro
+      const wallet = await this.walletModel.findOne({
+        'withdrawals._id': withdrawalId,
+      });
+
+      if (!wallet) {
+        throw new NotFoundException('Solicitud de retiro no encontrada');
+      }
+
+      // Encontrar el sub-documento del retiro
+      const withdrawal = wallet.withdrawals.find(
+        (w) => w?._id.toString() === withdrawalId,
+      );
+
+      if (!withdrawal) {
+        throw new NotFoundException('Retiro no encontrado en la wallet');
+      }
+
+      // Validaciones de Estado (Solo se procesan los 'pending')
+      if (withdrawal.status === newStatus) {
+        return { message: 'El estado ya es el solicitado', withdrawalId, currentStatus: newStatus };
+      }
+
+      if (withdrawal.status !== WithdrawalStatus.PENDING) {
+        throw new BadRequestException(
+          `Solo se pueden cambiar retiros pendientes. Estado actual: ${withdrawal.status}`,
+        );
+      }
+
+      const amount = withdrawal.amount;
+
+      // LÓGICA DE AJUSTE DE BALANCES (Coherente con requestWithdrawal)
+
+      // **Siempre se reduce el saldo pendiente, independientemente del resultado.**
+      if (wallet.withdrawalPendingBalance < amount) {
+          throw new BadRequestException('Inconsistencia: Saldo pendiente insuficiente.');
+      }
+
+      wallet.withdrawalPendingBalance -= amount;
+      wallet.markModified('withdrawalPendingBalance');
+
+
+      if (newStatus === WithdrawalStatus.REJECTED) {
+        // Rechazo. El dinero vuelve al saldo disponible.
+        wallet.availableBalance += amount;
+        wallet.markModified('availableBalance');
+      }
+
+      // Actualizar el estado del sub-documento
+      withdrawal.status = newStatus;
+      wallet.markModified('withdrawals');
+
+      // Guardar la Wallet completa
+      await wallet.save();
+
+      return {
+        message: 'Estado actualizado correctamente',
+        withdrawalId: withdrawal?._id,
+        newStatus: withdrawal.status
+      };
+    }
 }
