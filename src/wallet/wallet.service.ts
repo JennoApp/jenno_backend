@@ -313,7 +313,7 @@ export class WalletService {
         },
       },
 
-      { $sort: { 'withdrawals.requestDate': -1 } },
+      { $sort: { 'withdrawals.requestDate': 1 } },
 
       // 2. PROYECCIÓN CORREGIDA: Incluir todos los campos anidados y bankDetails
       {
