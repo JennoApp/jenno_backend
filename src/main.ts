@@ -68,6 +68,7 @@ async function bootstrap() {
       const allowedOrigins = [
         'https://jenno-client.vercel.app',
         'https://www.jenno.com.co',
+        'https://admin.jenno.com.co',
         'http://localhost:5173',
         'redis://default:AUVPAAIjcDEzYzkxNjY1YjkyMTM0OGU3OTE4ZDQ0Yzc4MDFkZjlhZHAxMA@wondrous-leopard-17743.upstash.io:6379'
       ]
