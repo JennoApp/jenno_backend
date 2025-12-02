@@ -64,6 +64,21 @@ export class WalletControler {
   }
 
   /**
+   * GET /wallet/withdrawals/history?page=&limit=
+   * Historial de retiros (completed/rejected) paginados.
+   */
+  @Get('withdrawals/history')
+  async listWithdrawalHistory(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<PaginatedDto<any>> {
+    const p = Math.max(1, parseInt(page) || 1);
+    const l = Math.max(1, parseInt(limit) || 20);
+
+    return this.walletService.getWithdrawalHistory(p, l);
+  }
+
+  /**
    * PATCH /wallet/withdrawals/:id/status
    * Actualiza el estado de un retiro (completed/rejected)
    */
