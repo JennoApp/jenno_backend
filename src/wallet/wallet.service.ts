@@ -369,7 +369,7 @@ export class WalletService {
 
       // Encontrar el sub-documento del retiro
       const withdrawal = wallet.withdrawals.find(
-        (w) => w?._id.toString() === withdrawalId,
+        (w) => w._id.toString() === withdrawalId,
       );
 
       if (!withdrawal) {

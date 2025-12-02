@@ -10,12 +10,15 @@ import {
   Patch,
   Delete,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PaypalService } from './paypal.service';
 import { BankAccountDto } from './dto/bankaccount.dto';
 import { PaginatedDto } from './dto/paginated.dto';
+import { UpdateWithdrawalStatusDto } from './dto/update-withdrawal-status.dto';
 
 @Controller('wallet')
 export class WalletControler {

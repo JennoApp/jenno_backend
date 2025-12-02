@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document, Types } from 'mongoose';
 
 export interface BankAccount {
   accountNumber: string;
@@ -10,6 +10,7 @@ export interface BankAccount {
 }
 
 export interface Withdrawal {
+  _id?: Types.ObjectId;
   bankId: string;
   amount: number;
   requestDate: Date;
