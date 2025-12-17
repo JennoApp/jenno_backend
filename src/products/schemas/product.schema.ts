@@ -38,13 +38,31 @@ const reviewSchema = new Schema({
   }
 })
 
+// Opciones Simples
+const optionSchema = new Schema({
+    name: String,
+    values: [String]
+})
+
+
+const variantSchema = new Schema({
+    sku: { type: String, index: true },
+    price: { type: Number, required: true },
+    quantity: { type: Number, default: 0 },
+    imgs: { type: [String], default: [] },
+    options: [{ name: String, value: String }],
+    meta: Schema.Types.Mixed
+})
+
+
+
 export const ProductSchema = new Schema({
   productname: String,
   imgs: {
     type: [String],
     default: []
   },
-  price: Number,
+  price: Number, // precio base (no obligatorio si usas variants)
   quantity: Number,
   location: String,
   SKU: String,
@@ -85,10 +103,8 @@ export const ProductSchema = new Schema({
     }
   ],
   // Options for product like color, size, etc.
-  options: [{
-    name: String,
-    optionslist: []
-  }],
+  options: [optionSchema],
+  variants: [variantSchema],
   // Especifications for product or service
   especifications: [{
     title: String,
