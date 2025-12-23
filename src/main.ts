@@ -70,7 +70,7 @@ async function bootstrap() {
         'https://www.jenno.com.co',
         'https://admin.jenno.com.co',
         'http://localhost:5173',
-        'redis://default:AUVPAAIjcDEzYzkxNjY1YjkyMTM0OGU3OTE4ZDQ0Yzc4MDFkZjlhZHAxMA@wondrous-leopard-17743.upstash.io:6379'
+        'redis://default:AYflAAIncDE4YTQ5N2ZmY2ZkN2M0NDUzYjYxMTE1YjU0ODAzMmM0M3AxMzQ3ODk@handy-kitten-34789.upstash.io:6379'
       ]
 
       if (!origin || allowedOrigins.includes(origin)) {
