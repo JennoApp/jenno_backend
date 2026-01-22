@@ -1,18 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { IoAdapter } from '@nestjs/platform-socket.io'
-import { ConfigService } from '@nestjs/config'
-import { ServerOptions } from 'socket.io'
-
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ConfigService } from '@nestjs/config';
+import { ServerOptions } from 'socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
-    rawBody: true
+    rawBody: true,
   });
 
-  const configService = app.get(ConfigService)
-  const port = configService.get('PORT') || 4000
+  const configService = app.get(ConfigService);
+  const port = configService.get('PORT') || 4000;
 
   // Crear y configurar adaptador para WebSocket
   class CustomIoAdapter extends IoAdapter {
@@ -36,32 +35,34 @@ async function bootstrap() {
   }
 
   // Crear y configurar adaptador
-  app.useWebSocketAdapter(new CustomIoAdapter(app))
+  app.useWebSocketAdapter(new CustomIoAdapter(app));
 
   app.use((req, res, next) => {
-    const origin = req.headers.origin || '*'
-    console.log('Cors middleware: Origin:', origin)
+    const origin = req.headers.origin || '*';
+    console.log('Cors middleware: Origin:', origin);
 
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET,OPTIONS,PATCH,DELETE,POST,PUT',
+    );
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version'
+      'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version',
     );
 
     if (req.method === 'OPTIONS') {
-      res.status(200).end()
-      return
+      res.status(200).end();
+      return;
     }
     next();
-  })
+  });
 
   // app.use((req, res, next) => {
   //   console.log('Request Headers:', req.headers);
   //   next();
   // });
-
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -70,13 +71,14 @@ async function bootstrap() {
         'https://www.jenno.com.co',
         'https://admin.jenno.com.co',
         'http://localhost:5173',
-        'redis://default:AYflAAIncDE4YTQ5N2ZmY2ZkN2M0NDUzYjYxMTE1YjU0ODAzMmM0M3AxMzQ3ODk@handy-kitten-34789.upstash.io:6379'
-      ]
+        'redis://default:AYflAAIncDE4YTQ5N2ZmY2ZkN2M0NDUzYjYxMTE1YjU0ODAzMmM0M3AxMzQ3ODk@handy-kitten-34789.upstash.io:6379',
+        'https://leptosomic-jacquelyne-intercondyloid.ngrok-free.dev',
+      ];
 
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true)
+        callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'))
+        callback(new Error('Not allowed by CORS'));
       }
     },
     allowedHeaders: [
@@ -88,17 +90,15 @@ async function bootstrap() {
       'Cache-Control',
       'Content-Disposition',
       'Content-Length',
-      'Origin'
+      'Origin',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     preflightContinue: false,
-    optionsSuccessStatus: 204
-  })
-
-
+    optionsSuccessStatus: 204,
+  });
 
   await app.listen(port);
-  console.log(`This application is running on: ${await app.getUrl()}`)
+  console.log(`This application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

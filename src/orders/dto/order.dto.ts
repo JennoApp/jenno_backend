@@ -1,12 +1,14 @@
-
 interface Product {
-  _id: string,
-  user: string,
+  _id: string;
+  productname: string;
+  price: number;
+  imgs: string[];
+  user: string;
 }
 
 interface selectedOption {
-  name: string
-  value: string
+  name: string;
+  value: string;
 }
 
 export class OrderDto {

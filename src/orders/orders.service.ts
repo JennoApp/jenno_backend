@@ -29,6 +29,19 @@ export class OrdersService {
     return order
   }
 
+  async createPaymentOrder(data: {
+      buyerId: string;
+      sellerId: string;
+      product: any;
+      amount: number;
+  }) {
+      const externalReference = `mp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+      const order = await this.orderModel.create({
+
+      })
+  }
+
   async createOrder(order: OrderDto) {
     const newOrder = new this.orderModel(order)
     const savedOrder = await newOrder.save()

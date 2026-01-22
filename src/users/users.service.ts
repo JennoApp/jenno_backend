@@ -83,6 +83,40 @@ export class UsersService {
     }
   }
 
+  async searchBusinessUsers(query: string, page = 1, limit = 20) {
+    const safeQuery = query?.trim();
+    if (!safeQuery) {
+      return new PaginatedDto([], page, limit, 0);
+    }
+
+    page = Number(page);
+    limit = Number(limit);
+
+    const terms = safeQuery.split(/\s+/);
+
+    const filter = {
+      accountType: 'business',
+      $and: terms.map((term) => ({
+        $or: [
+          { username: { $regex: term, $options: 'i' } },
+          { displayname: { $regex: term, $options: 'i' } },
+        ],
+      })),
+    };
+
+    const [users, itemCount] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec(),
+
+      this.userModel.countDocuments(filter),
+    ]);
+
+    return new PaginatedDto(users, page, limit, itemCount);
+  }
+
   async createUser(user: CreateUserDto) {
     try {
       const {
