@@ -62,7 +62,6 @@ export class PaymentsService {
       Math.random() * 10000,
     )}`;
 
-    // 1. Snapshot local
     const payment = await this.paymentModel.create({
       externalReference,
       status: 'pending',
@@ -70,24 +69,15 @@ export class PaymentsService {
       buyer: dto.buyer,
     });
 
-    console.log('MP URLS =>', {
-      success: this.configService.get('MP_BACK_SUCCESS'),
-      pending: this.configService.get('MP_BACK_PENDING'),
-      failure: this.configService.get('MP_BACK_FAILURE'),
-    });
-
     const successUrl = this.configService.get<string>('MP_BACK_SUCCESS');
     const pendingUrl = this.configService.get<string>('MP_BACK_PENDING');
     const failureUrl = this.configService.get<string>('MP_BACK_FAILURE');
+    const notificationUrl = this.configService.get<string>('MP_WEBHOOK_URL');
 
-    if (!successUrl || !pendingUrl || !failureUrl) {
-      throw new Error('MercadoPago back_urls no están configuradas');
-    }
-
-    // 2. Preferencia MercadoPago
     const preference = await this.mpPreference.create({
       body: {
         external_reference: externalReference,
+
         items: dto.items.map((it) => ({
           id: it.id,
           title: it.title,
@@ -96,39 +86,46 @@ export class PaymentsService {
           currency_id: 'COP',
           unit_price: Math.round(Number(it.unit_price)),
         })),
+
         payer: {
           email: dto.buyer?.email,
         },
+
         back_urls: {
           success: `${successUrl}?external=${externalReference}`,
           pending: `${pendingUrl}?external=${externalReference}`,
           failure: `${failureUrl}?external=${externalReference}`,
         },
+
+        notification_url: notificationUrl,
+
         auto_return: 'approved',
       },
     });
 
-    // 3. Guardar datos MP
     payment.preferenceId = String(preference.id);
     payment.initPoint = preference.init_point;
     await payment.save();
 
     return {
       paymentId: payment._id.toString(),
-      externalReference,
-      preferenceId: payment.preferenceId,
       initPoint: payment.initPoint,
     };
   }
 
-  /**
-   * Webhook MercadoPago
-   */
+  /* ===========================
+   * WEBHOOK
+   * =========================== */
+
   async handleNotification(body: any) {
+    console.log('MP WEBHOOK:', body);
+
+    if (body.type !== 'payment') return null;
+
     const mpPaymentId = body?.data?.id || body?.id;
     if (!mpPaymentId) return null;
 
-    // 1. Consultar pago real a MP
+    // Consultar pago real a MP
     const mpPayment = await this.mpPayment.get({
       id: mpPaymentId,
     });
@@ -136,14 +133,21 @@ export class PaymentsService {
     const externalReference = mpPayment.external_reference;
     if (!externalReference) return null;
 
-    // 2. Buscar snapshot local
     const payment = await this.paymentModel.findOne({ externalReference });
     if (!payment) return null;
+
+    // Idempotencia
+    if (
+      payment.providerPaymentId === String(mpPayment.id) &&
+      payment.status === mpPayment.status
+    ) {
+      return payment;
+    }
 
     payment.rawResponse = mpPayment;
     payment.providerPaymentId = String(mpPayment.id);
 
-    // 3. Mapear estado
+    // MAPEO ESTADOS
     switch (mpPayment.status) {
       case 'approved':
         payment.status = 'approved';
@@ -161,7 +165,7 @@ export class PaymentsService {
         payment.status = mpPayment.status as any;
     }
 
-    // 4. Crear órdenes si se aprueba
+    // Crear órdenes solo si se aprueba
     if (
       payment.status === 'approved' &&
       (!payment.orderIds || payment.orderIds.length === 0)

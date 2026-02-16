@@ -1,4 +1,12 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')
@@ -17,30 +25,31 @@ export class PaymentsController {
    * MERCADO PAGO
    * ========================= */
 
-  /**
-   * Crear preferencia MercadoPago
-   * Frontend llama este endpoint
-   */
   @Post('mercadopago/preference')
   createMercadoPagoPreference(@Body() body: any) {
     return this.paymentsService.createPreference(body);
   }
 
   /**
-   * Webhook MercadoPago
-   * MP llama este endpoint automáticamente
+   * WEBHOOK MP
    */
   @Post('mercadopago/webhook')
   @HttpCode(200)
-  handleMercadoPagoWebhook(@Req() req: any) {
-    return this.paymentsService.handleNotification(req.body);
+  async handleMercadoPagoWebhook(@Req() req: any) {
+    console.log('Webhook recibido:', req.body);
+
+    // Procesar async sin bloquear respuesta
+    this.paymentsService
+      .handleNotification(req.body)
+      .catch((err) => console.error('Webhook error:', err));
+
+    return { received: true };
   }
 
   /**
-   * Consultar estado de un pago
-   * (por paymentId o externalReference)
+   * STATUS CHECK
    */
-  @Get(':idOrExternal')
+  @Get('status/:idOrExternal')
   getPaymentStatus(@Param('idOrExternal') idOrExternal: string) {
     return this.paymentsService.getStatus(idOrExternal);
   }
